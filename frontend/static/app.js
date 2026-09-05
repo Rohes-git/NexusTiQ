@@ -1,13 +1,13 @@
 /* ================================================================
-   ClaimLens — app.js
-   Handles form submission, file-name display, and preview updates.
-   No external dependencies.
+   ClaimLens — app.js (Milestone 3)
+   Handles single-document fact extraction via Gemini and claim submission.
+   No external libraries.
    ================================================================ */
 
 (function () {
   "use strict";
 
-  // ── DOM references ──────────────────────────────────────────────
+  // ── DOM References ──────────────────────────────────────────────
   const form = document.getElementById("claim-form");
   const reviewBtn = document.getElementById("review-btn");
   const feedback = document.getElementById("submit-feedback");
@@ -19,28 +19,39 @@
   const claimFormName = document.getElementById("claim-form-name");
   const repairEstimateName = document.getElementById("repair-estimate-name");
 
+  const btnExtractClaimForm = document.getElementById("btn-extract-claim-form");
+  const btnExtractRepair = document.getElementById("btn-extract-repair-estimate");
+
+  const extractionCard = document.getElementById("extraction-results-card");
+  const extractDocTypeBadge = document.getElementById("extract-doc-type-badge");
+  const metaFilename = document.getElementById("meta-filename");
+  const metaPages = document.getElementById("meta-pages");
+  const summaryGrid = document.getElementById("summary-grid");
+  const evidenceList = document.getElementById("evidence-list");
+
   const statusClaimForm = document.getElementById("status-claim-form");
   const statusRepairEstimate = document.getElementById("status-repair-estimate");
   const statusDescription = document.getElementById("status-description");
 
-  // ── File-name display ──────────────────────────────────────────
-  function bindFileDisplay(input, nameEl) {
+  // ── File-name and Button State Binding ──────────────────────────
+  function bindFileInput(input, nameEl, btnEl) {
     input.addEventListener("change", function () {
       if (input.files.length) {
         nameEl.textContent = input.files[0].name;
+        btnEl.disabled = false;
       } else {
         nameEl.textContent = "";
+        btnEl.disabled = true;
       }
-      updatePreview();
+      updateReviewPreview();
     });
   }
 
-  bindFileDisplay(claimFormInput, claimFormName);
-  bindFileDisplay(repairInput, repairEstimateName);
+  bindFileInput(claimFormInput, claimFormName, btnExtractClaimForm);
+  bindFileInput(repairInput, repairEstimateName, btnExtractRepair);
+  descriptionInput.addEventListener("input", updateReviewPreview);
 
-  descriptionInput.addEventListener("input", updatePreview);
-
-  // ── Drag-and-drop visual cue ───────────────────────────────────
+  // ── Drag & Drop UI ──────────────────────────────────────────────
   document.querySelectorAll(".file-upload").forEach(function (zone) {
     zone.addEventListener("dragover", function (e) {
       e.preventDefault();
@@ -54,9 +65,8 @@
     });
   });
 
-  // ── Live preview update ────────────────────────────────────────
-  function updatePreview() {
-    // Claim form
+  // ── Live Review Preview Updates ─────────────────────────────────
+  function updateReviewPreview() {
     if (claimFormInput.files.length) {
       statusClaimForm.textContent = "Received";
       statusClaimForm.className = "badge badge-received";
@@ -65,7 +75,6 @@
       statusClaimForm.className = "badge badge-empty";
     }
 
-    // Repair estimate
     if (repairInput.files.length) {
       statusRepairEstimate.textContent = "Received";
       statusRepairEstimate.className = "badge badge-received";
@@ -74,7 +83,6 @@
       statusRepairEstimate.className = "badge badge-empty";
     }
 
-    // Incident description
     if (descriptionInput.value.trim()) {
       statusDescription.textContent = "Provided";
       statusDescription.className = "badge badge-received";
@@ -84,7 +92,157 @@
     }
   }
 
-  // ── Form submission ────────────────────────────────────────────
+  // ── Extract Document Facts via API ──────────────────────────────
+  async function extractDocumentFacts(file, triggerBtn) {
+    if (!file) return;
+
+    triggerBtn.disabled = true;
+    var originalText = triggerBtn.textContent;
+    triggerBtn.textContent = "Extracting…";
+    feedback.classList.add("hidden");
+
+    var formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      var response = await fetch("/api/extract-document", {
+        method: "POST",
+        body: formData,
+      });
+
+      var data = await response.json();
+
+      if (!data.success) {
+        showFeedback("error", data.error ? data.error.message : "Extraction failed.");
+        extractionCard.classList.add("hidden");
+      } else {
+        renderExtractionResults(data);
+      }
+    } catch (err) {
+      showFeedback("error", "Failed to connect to extraction service. " + err.message);
+      extractionCard.classList.add("hidden");
+    } finally {
+      triggerBtn.disabled = false;
+      triggerBtn.textContent = originalText;
+    }
+  }
+
+  btnExtractClaimForm.addEventListener("click", function () {
+    if (claimFormInput.files.length) {
+      extractDocumentFacts(claimFormInput.files[0], btnExtractClaimForm);
+    }
+  });
+
+  btnExtractRepair.addEventListener("click", function () {
+    if (repairInput.files.length) {
+      extractDocumentFacts(repairInput.files[0], btnExtractRepair);
+    }
+  });
+
+  // ── Render Structured Facts & Evidence ──────────────────────────
+  function renderExtractionResults(data) {
+    metaFilename.textContent = data.document.filename;
+    metaPages.textContent = data.document.page_count;
+
+    var typeLabels = {
+      claim_form: "Claim Form",
+      repair_estimate: "Repair Estimate",
+      fir: "First Information Report (FIR)",
+      unknown: "Unknown Document",
+    };
+    extractDocTypeBadge.textContent = typeLabels[data.document.document_type] || data.document.document_type;
+
+    // Render Summary Grid
+    summaryGrid.innerHTML = "";
+    data.facts.forEach(function (fact) {
+      var card = document.createElement("div");
+      card.className = "fact-card";
+
+      var label = document.createElement("div");
+      label.className = "fact-label";
+      label.textContent = fact.field_name.replace(/_/g, " ");
+
+      var val = document.createElement("div");
+      val.className = "fact-value";
+      val.textContent = formatFactValue(fact.field_name, fact.value);
+
+      card.appendChild(label);
+      card.appendChild(val);
+
+      if (fact.raw_value && String(fact.raw_value) !== String(fact.value)) {
+        var raw = document.createElement("div");
+        raw.className = "fact-raw";
+        raw.textContent = "Raw: " + fact.raw_value;
+        card.appendChild(raw);
+      }
+
+      summaryGrid.appendChild(card);
+    });
+
+    // Render Evidence Provenance List
+    evidenceList.innerHTML = "";
+    data.facts.forEach(function (fact) {
+      var item = document.createElement("div");
+      item.className = "evidence-card" + (fact.evidence_valid ? "" : " unverified");
+
+      var header = document.createElement("div");
+      header.className = "evidence-card-header";
+
+      var title = document.createElement("span");
+      title.className = "evidence-field-name";
+      title.textContent = fact.field_name.replace(/_/g, " ");
+
+      var pills = document.createElement("div");
+      pills.className = "evidence-meta-pills";
+
+      var pagePill = document.createElement("span");
+      pagePill.className = "page-pill";
+      pagePill.textContent = "Page " + fact.page_number;
+      pills.appendChild(pagePill);
+
+      var confPill = document.createElement("span");
+      confPill.className = "conf-pill";
+      confPill.textContent = Math.round(fact.confidence * 100) + "% confidence";
+      pills.appendChild(confPill);
+
+      var validBadge = document.createElement("span");
+      validBadge.className = "badge " + (fact.evidence_valid ? "badge-success" : "badge-error");
+      validBadge.textContent = fact.evidence_valid ? "✓ Verified in source" : "✗ Unverified quote";
+      pills.appendChild(validBadge);
+
+      header.appendChild(title);
+      header.appendChild(pills);
+
+      var quoteBox = document.createElement("div");
+      quoteBox.className = "quote-box";
+      quoteBox.textContent = fact.evidence_text || "(No evidence quote provided)";
+
+      item.appendChild(header);
+      item.appendChild(quoteBox);
+      evidenceList.appendChild(item);
+    });
+
+    extractionCard.classList.remove("hidden");
+    extractionCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function formatFactValue(fieldName, value) {
+    if (value === null || value === undefined || value === "") {
+      return "—";
+    }
+    if (fieldName.includes("amount")) {
+      return "₹" + Number(value).toLocaleString();
+    }
+    return String(value);
+  }
+
+  function showFeedback(type, message) {
+    feedback.className = "feedback " + type;
+    feedback.textContent = message;
+    feedback.classList.remove("hidden");
+  }
+
+  // ── Full Review Submission Handler ──────────────────────────────
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
@@ -106,19 +264,16 @@
       feedback.innerHTML =
         "<strong>Received.</strong> " +
         data.message +
-        (data.documents_received.length
+        (data.documents_received && data.documents_received.length
           ? "<br>Documents: " +
             data.documents_received.map(function (d) { return d.filename; }).join(", ")
           : "");
       feedback.classList.remove("hidden");
     } catch (err) {
-      feedback.className = "feedback info";
-      feedback.textContent =
-        "Review engine will be connected in the next milestone.";
-      feedback.classList.remove("hidden");
+      showFeedback("info", "Review engine will be connected in a later milestone.");
+    } finally {
+      reviewBtn.disabled = false;
+      reviewBtn.textContent = "Submit for Full Review";
     }
-
-    reviewBtn.disabled = false;
-    reviewBtn.textContent = "Review Claim";
   });
 })();

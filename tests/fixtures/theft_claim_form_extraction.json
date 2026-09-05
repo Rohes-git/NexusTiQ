@@ -1,0 +1,64 @@
+{
+  "document_type": "claim_form",
+  "claim_id": {
+    "raw_value": "CLM-003",
+    "evidence_text": "Claim Reference: CLM-003",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "policy_number": {
+    "raw_value": "POL-003",
+    "evidence_text": "Policy: POL-003",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_registration": {
+    "raw_value": "TN03EF9012",
+    "evidence_text": "TN03EF9012",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_make": {
+    "raw_value": "Honda",
+    "evidence_text": "Honda Activa 6G",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "vehicle_model": {
+    "raw_value": "Activa 6G",
+    "evidence_text": "Honda Activa 6G",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "incident_type": {
+    "raw_value": "Theft",
+    "evidence_text": "Theft",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "incident_date": {
+    "raw_value": "25 August 2026",
+    "evidence_text": "25 August 2026",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "notification_date": {
+    "raw_value": "26 August 2026",
+    "evidence_text": "26 August 2026",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "incident_description": {
+    "raw_value": "The insured two-wheeler was parked in the designated parking area outside the insured's residence at approximately 9:00 PM.",
+    "evidence_text": "The insured two-wheeler was parked in the designated parking area outside the insured's residence at approximately 9:00 PM.",
+    "page_number": 1,
+    "confidence": 0.97
+  },
+  "claimed_amount": {
+    "raw_value": "₹72,000",
+    "evidence_text": "72,000",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "repair_estimate_amount": null
+}

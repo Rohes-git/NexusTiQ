@@ -1,0 +1,64 @@
+{
+  "document_type": "claim_form",
+  "claim_id": {
+    "raw_value": "CLM-001",
+    "evidence_text": "Claim ID",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "policy_number": {
+    "raw_value": "POL-001",
+    "evidence_text": "Policy Number",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_registration": {
+    "raw_value": "TN01AB1234",
+    "evidence_text": "Vehicle Registration",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_make": {
+    "raw_value": "Hyundai",
+    "evidence_text": "Hyundai i20",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "vehicle_model": {
+    "raw_value": "i20",
+    "evidence_text": "Hyundai i20",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "incident_type": {
+    "raw_value": "Accident",
+    "evidence_text": "Incident Type",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "incident_date": {
+    "raw_value": "20 August 2026",
+    "evidence_text": "Incident Date",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "notification_date": {
+    "raw_value": "22 August 2026",
+    "evidence_text": "Notification Date",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "incident_description": {
+    "raw_value": "The insured vehicle was travelling on a city road when another vehicle collided with its front-left side. The insured vehicle sustained damage to the front bumper, left headlamp and front fender.",
+    "evidence_text": "The insured vehicle was travelling on a city road when another vehicle collided with its front-left side.",
+    "page_number": 1,
+    "confidence": 0.96
+  },
+  "claimed_amount": {
+    "raw_value": "₹78,000",
+    "evidence_text": "Total Claimed Amount",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "repair_estimate_amount": null
+}

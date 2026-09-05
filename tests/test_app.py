@@ -64,7 +64,7 @@ def test_static_js_served():
 
 
 def test_review_claim_endpoint():
-    """POST /api/claims/review returns Milestone 1 placeholder response."""
+    """POST /api/claims/review returns placeholder response."""
     response = client.post(
         "/api/claims/review",
         data={"incident_description": "Car hit tree", "claim_id": "CLM-001"},
@@ -144,7 +144,6 @@ def test_review_engine_placeholder():
     result = engine.review(claim)
     assert isinstance(result, ReviewResult)
     assert result.recommendation == Recommendation.NEED_MORE_INFO
-    assert "Milestone 1" in result.missing_information[0]
 
 
 def test_placeholders_raise_not_implemented():
@@ -152,9 +151,6 @@ def test_placeholders_raise_not_implemented():
     extractor = GeminiExtractor()
     with pytest.raises(NotImplementedError):
         extractor.extract_claim_facts(Document())
-
-    with pytest.raises(NotImplementedError):
-        extractor.extract_text_from_pdf(b"")
 
     embedder = EmbeddingService()
     with pytest.raises(NotImplementedError):

@@ -12,16 +12,15 @@ ClaimLens is an evidence-first review assistant for motor insurance claims invol
 
 ## Current Milestone
 
-**Milestone 2 — Policy and Demo Data**
+**Milestone 3 — Document Ingestion and Fact Extraction**
 
-This milestone adds a high-quality, synthetic motor insurance policy and synthetic claim evidence dataset that serves as ground truth for the review pipeline:
+This milestone implements the core document processing OCR and fact extraction pipeline:
 
-- **Fictional Policy**: 16 clearly numbered clauses across 7 sections covering policy period, accidental damage, theft, exclusions, IDV, claim notification, and required documents. Available as structured JSON (`data/policy/motor_policy.json`) and searchable PDF (`data/policy/ClaimLens_Motor_Policy.pdf`).
-- **Demo Claim Dataset**: 3 synthetic claim scenarios exercising key evidence-review states (Supported, Contradictory, Incomplete).
-- **Ground Truth Manifest**: `data/demo_claims/ground_truth.json` defining expected recommendations and evidence checks.
-- **Validation Suite**: `scripts/validate_demo_data.py` validating PDF integrity, text extraction with PyMuPDF, and ground-truth consistency.
-
-> **Disclaimer**: All policies and claim documents in this repository are completely fictional and synthetic. They do not represent real customers, real insurers, or official insurance contracts.
+- **Page-Aware PDF Ingestion**: Extracts text from PDFs page-by-page using `PyMuPDF`, maintaining structural delimiters (`--- PAGE X ---`) to guarantee precise provenance tracking.
+- **Structured Fact Extraction**: Leverages the official `google-genai` SDK to extract domain-specific entities (amounts, dates, vehicle details) using Pydantic `GeminiExtractionSchema` and deterministic temperature `0.0`.
+- **Python-Side Evidence Verification**: Prevents AI hallucination through deterministic validation (`verify_evidence_in_page`) that ensures requested `evidence_text` quotes actually appear in the source page text.
+- **Deterministic Normalization**: Standardizes currency amounts (e.g., `"Rs. 72,000/-"` → `72000`) and date formats (e.g., `"20 August 2026"` → `"2026-08-20"`) without losing the raw extracted values or context.
+- **Robust Endpoint API**: Extends `GET /api/health` and implements `POST /api/extract-document` with local fallbacks, mock testing offline fixtures (`tests/fixtures/`), and frontend evidence component visualization (`index.html`).
 
 ---
 
@@ -148,9 +147,8 @@ python -m pytest tests/ -v
 
 | Variable | Required | Description |
 |---|---|---|
-| `GEMINI_API_KEY` | No (Milestones 1 & 2) | Google Gemini API key. Not used yet — the app starts and runs fully without it. |
-
-Gemini integration will be added in Milestone 3.
+| `GEMINI_API_KEY` | Optional for running/testing offline (Required for live Gemini extraction) | Google Gemini API key. If unset, unit tests run against offline fixtures and the API gracefully reports `GEMINI_UNAVAILABLE`. |
+| `GEMINI_MODEL` | No (Default: `gemini-2.0-flash`) | Gemini model identifier used for extraction. |
 
 ---
 
@@ -159,9 +157,9 @@ Gemini integration will be added in Milestone 3.
 | Milestone | Description | Status |
 |---|---|---|
 | **1** | Application foundation | Done |
-| **2** | Policy and demo data | Done (Current) |
-| **3** | Document extraction (Gemini) | Next |
-| **4** | Evidence retrieval (embeddings + policy search) | Pending |
+| **2** | Policy and demo data | Done |
+| **3** | Document extraction (Gemini) | Done (Current) |
+| **4** | Evidence retrieval (embeddings + policy search) | Next |
 | **5** | Deterministic policy rules | Pending |
 | **6** | Contradiction detection | Pending |
 | **7** | Review generation (Gemini report) | Pending |

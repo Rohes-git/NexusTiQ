@@ -1,0 +1,64 @@
+{
+  "document_type": "claim_form",
+  "claim_id": {
+    "raw_value": "CLM-002",
+    "evidence_text": "Claim Reference: CLM-002",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "policy_number": {
+    "raw_value": "POL-002",
+    "evidence_text": "Policy: POL-002",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_registration": {
+    "raw_value": "TN02CD5678",
+    "evidence_text": "TN02CD5678",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_make": {
+    "raw_value": "Maruti",
+    "evidence_text": "Maruti Baleno",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "vehicle_model": {
+    "raw_value": "Baleno",
+    "evidence_text": "Maruti Baleno",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "incident_type": {
+    "raw_value": "Accident",
+    "evidence_text": "Accident",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "incident_date": {
+    "raw_value": "10 August 2026",
+    "evidence_text": "10 August 2026",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "notification_date": {
+    "raw_value": "15 August 2026",
+    "evidence_text": "15 August 2026",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "incident_description": {
+    "raw_value": "The vehicle was involved in a collision on 10 August 2026.",
+    "evidence_text": "The vehicle was involved in a collision on 10 August 2026.",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "claimed_amount": {
+    "raw_value": "₹85,000",
+    "evidence_text": "85,000",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "repair_estimate_amount": null
+}

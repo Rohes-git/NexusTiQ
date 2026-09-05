@@ -1,0 +1,44 @@
+{
+  "document_type": "repair_estimate",
+  "claim_id": {
+    "raw_value": "CLM-001",
+    "evidence_text": "Estimate Ref: EST-CLM-001",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "policy_number": null,
+  "vehicle_registration": {
+    "raw_value": "TN01AB1234",
+    "evidence_text": "TN01AB1234",
+    "page_number": 1,
+    "confidence": 0.99
+  },
+  "vehicle_make": {
+    "raw_value": "Hyundai",
+    "evidence_text": "Hyundai i20",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "vehicle_model": {
+    "raw_value": "i20",
+    "evidence_text": "Hyundai i20",
+    "page_number": 1,
+    "confidence": 0.95
+  },
+  "incident_type": null,
+  "incident_date": {
+    "raw_value": "20 August 2026",
+    "evidence_text": "20 August 2026",
+    "page_number": 1,
+    "confidence": 0.98
+  },
+  "notification_date": null,
+  "incident_description": null,
+  "claimed_amount": null,
+  "repair_estimate_amount": {
+    "raw_value": "₹78,000",
+    "evidence_text": "78,000",
+    "page_number": 1,
+    "confidence": 0.99
+  }
+}

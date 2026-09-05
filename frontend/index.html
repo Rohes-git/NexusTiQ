@@ -15,76 +15,138 @@
         <h1 class="brand-name">Claim<span class="brand-accent">Lens</span></h1>
         <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant</p>
       </div>
-      <span class="track-badge">PS02</span>
+      <div class="header-right">
+        <span class="pipeline-tag">Milestone 3 · Fact Extraction</span>
+        <span class="track-badge">PS02</span>
+      </div>
     </div>
   </header>
 
   <main class="main">
 
-    <!-- ── Submit a Claim ────────────────────────────────────────── -->
+    <!-- ── Submit & Ingest Card ────────────────────────────────────── -->
     <section class="card submit-card">
-      <h2 class="card-title">Submit a Claim</h2>
+      <div class="card-header-row">
+        <h2 class="card-title">Document Ingestion & Fact Extraction</h2>
+        <span class="subtle-badge">PyMuPDF + Gemini</span>
+      </div>
+      <p class="section-desc">
+        Upload a claim document (Claim Form, Repair Estimate, or FIR) to extract structured facts and verify evidence quotes against source pages.
+      </p>
+
       <form id="claim-form" class="claim-form" enctype="multipart/form-data">
 
-        <div class="form-group">
-          <label for="claim-form-file">Claim Form</label>
-          <div class="file-upload" id="drop-claim-form">
-            <input type="file" id="claim-form-file" name="claim_form" accept=".pdf" />
-            <p class="file-upload-text">
-              <span class="file-upload-icon">📄</span>
-              Drop PDF here or <span class="link">browse</span>
-            </p>
-            <p class="file-name" id="claim-form-name"></p>
+        <div class="form-row-2col">
+          <!-- File 1: Claim Form -->
+          <div class="form-group">
+            <label for="claim-form-file">1. Claim Form (PDF)</label>
+            <div class="file-upload" id="drop-claim-form">
+              <input type="file" id="claim-form-file" name="claim_form" accept=".pdf" />
+              <p class="file-upload-text">
+                <span class="file-upload-icon">📄</span>
+                Drop PDF here or <span class="link">browse</span>
+              </p>
+              <p class="file-name" id="claim-form-name"></p>
+            </div>
+            <div class="file-action-row">
+              <button type="button" class="btn-secondary btn-sm" id="btn-extract-claim-form" disabled>
+                Extract Evidence
+              </button>
+            </div>
+          </div>
+
+          <!-- File 2: Repair Estimate / FIR -->
+          <div class="form-group">
+            <label for="repair-estimate-file">2. Repair Estimate / FIR (PDF)</label>
+            <div class="file-upload" id="drop-repair-estimate">
+              <input type="file" id="repair-estimate-file" name="repair_estimate" accept=".pdf" />
+              <p class="file-upload-text">
+                <span class="file-upload-icon">📄</span>
+                Drop PDF here or <span class="link">browse</span>
+              </p>
+              <p class="file-name" id="repair-estimate-name"></p>
+            </div>
+            <div class="file-action-row">
+              <button type="button" class="btn-secondary btn-sm" id="btn-extract-repair-estimate" disabled>
+                Extract Evidence
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="repair-estimate-file">Repair Estimate / FIR</label>
-          <div class="file-upload" id="drop-repair-estimate">
-            <input type="file" id="repair-estimate-file" name="repair_estimate" accept=".pdf" />
-            <p class="file-upload-text">
-              <span class="file-upload-icon">📄</span>
-              Drop PDF here or <span class="link">browse</span>
-            </p>
-            <p class="file-name" id="repair-estimate-name"></p>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="incident-description">Incident Description</label>
+          <label for="incident-description">Incident Description <span class="optional">(optional notes)</span></label>
           <textarea
             id="incident-description"
             name="incident_description"
-            rows="5"
+            rows="3"
             placeholder="Describe the incident — what happened, when, where, vehicles involved…"
           ></textarea>
         </div>
 
         <div class="form-group">
           <label for="claim-id">
-            Claim ID <span class="optional">(optional)</span>
+            Claim Reference ID <span class="optional">(optional)</span>
           </label>
           <input
             type="text"
             id="claim-id"
             name="claim_id"
-            placeholder="e.g. CLM-2026-00142"
+            placeholder="e.g. CLM-001"
           />
         </div>
 
-        <button type="submit" class="btn-primary" id="review-btn">
-          Review Claim
-        </button>
+        <div class="submit-action-row">
+          <button type="submit" class="btn-primary" id="review-btn">
+            Submit for Full Review
+          </button>
+          <span class="action-note">Policy review engine enabled in later milestones</span>
+        </div>
       </form>
 
-      <!-- Submission feedback -->
+      <!-- Feedback Banner -->
       <div id="submit-feedback" class="feedback hidden"></div>
+    </section>
+
+    <!-- ── Extraction Results Section (Milestone 3) ────────────────── -->
+    <section class="card extraction-results-card hidden" id="extraction-results-card">
+      <div class="card-header-row">
+        <h2 class="card-title">Extracted Document Facts</h2>
+        <span class="badge badge-success" id="extract-doc-type-badge">claim_form</span>
+      </div>
+
+      <div class="meta-strip">
+        <div><strong>Filename:</strong> <span id="meta-filename">-</span></div>
+        <div><strong>Pages:</strong> <span id="meta-pages">-</span></div>
+        <div><strong>Status:</strong> <span class="text-success font-medium">Fact extraction complete</span></div>
+      </div>
+
+      <!-- Key Facts Summary Grid -->
+      <h3 class="section-heading">Structured Summary</h3>
+      <div class="facts-grid" id="summary-grid">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Provenance / Evidence Details -->
+      <h3 class="section-heading" style="margin-top: 24px;">Evidence Provenance</h3>
+      <p class="section-subtext">
+        Every fact is verified against the source PDF page to prevent hallucinated citations.
+      </p>
+
+      <div class="evidence-list" id="evidence-list">
+        <!-- Dynamically populated -->
+      </div>
+
+      <div class="extraction-disclaimer">
+        <span class="info-icon">ℹ️</span>
+        <span>Fact extraction complete — policy rules and coverage evaluation will be performed in subsequent milestones.</span>
+      </div>
     </section>
 
     <!-- ── Review Preview ────────────────────────────────────────── -->
     <section class="card preview-card">
       <h2 class="card-title">
-        Review Preview
+        Review Pipeline Status
         <span class="proto-badge">Prototype Preview</span>
       </h2>
 
@@ -109,20 +171,20 @@
 
       <!-- Consistency -->
       <div class="preview-section">
-        <h3 class="section-heading">Consistency</h3>
-        <p class="muted" id="consistency-status">Waiting for claim documents</p>
+        <h3 class="section-heading">Consistency & Contradictions</h3>
+        <p class="muted" id="consistency-status">Awaiting multi-document cross-check (Milestone 6)</p>
       </div>
 
       <!-- Policy Analysis -->
       <div class="preview-section">
-        <h3 class="section-heading">Policy Analysis</h3>
-        <p class="muted" id="policy-status">Waiting for claim review</p>
+        <h3 class="section-heading">Policy Rules Analysis</h3>
+        <p class="muted" id="policy-status">Awaiting deterministic policy evaluation (Milestones 4-5)</p>
       </div>
 
       <!-- Recommendation -->
       <div class="preview-section">
-        <h3 class="section-heading">Recommendation</h3>
-        <p class="muted" id="recommendation-status">Awaiting evidence</p>
+        <h3 class="section-heading">Final Recommendation</h3>
+        <p class="muted" id="recommendation-status">Awaiting structured evidence review (Milestone 7)</p>
       </div>
     </section>
 
@@ -130,7 +192,7 @@
 
   <!-- ── Footer ────────────────────────────────────────────────────── -->
   <footer class="footer">
-    <p>ClaimLens v0.1 · Milestone 1 · Evidence first. Decisions second.</p>
+    <p>ClaimLens v0.1 · Milestone 3 · Evidence first. Decisions second.</p>
   </footer>
 
   <script src="/static/app.js"></script>
