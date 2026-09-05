@@ -12,16 +12,23 @@ ClaimLens is an evidence-first review assistant for motor insurance claims invol
 
 ## Current Milestone
 
-**Milestone 4 — Policy Retrieval and Clause Grounding**
+**Milestone 5 — Deterministic Policy Rule Engine**
 
-This milestone implements semantic policy clause retrieval and factual clause grounding:
+This milestone implements deterministic, auditable policy rule evaluations strictly adhering to the 16-clause canonical synthetic motor policy:
 
-- **Policy Clause Indexing**: Loads the 16-clause synthetic motor policy, preserving clause IDs (e.g., `2.1`, `3.2`), section names, titles, and exact clause text, while computing a canonical SHA-256 hash for cache invalidation.
-- **Gemini Embeddings & Local Caching**: Uses `google-genai` embedding API (`gemini-embedding-2`) to generate dense vector embeddings, cached locally at `data/policy/policy_embeddings.json` with hash and model validity checks.
-- **Factual Semantic Query Construction**: Converts extracted claim facts (incident type, vehicle details, dates, financial amounts) into targeted search queries without fabricating facts or making premature coverage conclusions.
-- **Local Vector Search**: Lightweight NumPy-based cosine similarity index ranking relevant clauses deterministically.
-- **Clause Grounding Layer**: Attaches deterministic, factual relevance rationale to each retrieved clause (strictly avoiding approval/rejection or fraud determinations).
-- **Interactive UI & API**: Exposes `POST /api/retrieve-policy` and adds interactive policy grounding cards with relevance percentages and exact policy quotes in the frontend.
+- **100% Deterministic Rule Engine**: Evaluates extracted claim facts and document inventories against explicit clauses in `data/policy/motor_policy.json` with zero external API dependencies.
+- **Strict Decision Boundary**: Adheres strictly to the *Evidence First, Decisions Second* principle. Allowed finding statuses are `PASS`, `FAIL`, `WARNING`, `INSUFFICIENT_EVIDENCE`, and `NOT_APPLICABLE`. Never outputs premature approval/rejection decisions or fraud claims.
+- **Auditable Policy Findings**: Captures `rule_id`, `clause_id`, `category`, `status`, `title`, `message`, `facts_used` (with field values and evidence quotes), `evidence_references`, and `severity`.
+- **Policy Rules Implemented**:
+  - *Coverage Period (Clause 1.1)*: Verifies incident date falls within active policy dates.
+  - *Covered Vehicle (Clause 1.2)*: Confirms registration number and vehicle identification.
+  - *Accidental Damage & Repair (Clauses 2.1 & 2.2)*: Evaluates accident coverage eligibility and itemized repair estimates.
+  - *Theft Coverage & FIR (Clauses 3.1 & 3.2)*: Validates total loss theft coverage and enforces mandatory First Information Report (FIR) presence.
+  - *Valuation & IDV Limits (Clauses 5.1 & 5.2)*: Checks financial claim amounts against IDV caps without premature deduction calculations.
+  - *Notification Window (Clauses 6.1 & 6.2)*: Verifies notification timeline ($\le 7$ days $\rightarrow$ `PASS`, $> 7$ days $\rightarrow$ `WARNING` for investigator review).
+  - *Required Document Inventories (Clauses 7.1 & 7.2)*: Enforces document completeness for accident claims (Claim Form, Repair Estimate) and theft claims (Claim Form, FIR).
+  - *Explicit Exclusions (Clauses 4.1, 4.2, 4.3)*: Evaluates deliberate damage, excluded usage (racing/commercial hire), and misrepresentation.
+- **API & Interactive UI**: Exposes `POST /api/evaluate-policy` and adds interactive policy findings cards with color-coded status badges, metrics summary, and non-adjudication disclaimers in the frontend.
 
 ---
 
@@ -182,6 +189,18 @@ python scripts/test_policy_retrieval.py
 
 ---
 
+## Evaluating Policy Rules
+
+You can run deterministic policy rule evaluations on the synthetic demo claims:
+
+```bash
+python scripts/test_policy_rules.py
+```
+
+This runs offline rule evaluation across all demo cases without requiring network access or API keys.
+
+---
+
 ## Roadmap
 
 | Milestone | Description | Status |
@@ -189,9 +208,9 @@ python scripts/test_policy_retrieval.py
 | **1** | Application foundation | Done |
 | **2** | Policy and demo data | Done |
 | **3** | Document extraction (Gemini) | Done |
-| **4** | Evidence retrieval (embeddings + policy search) | Done (Current) |
-| **5** | Deterministic policy rules | Next |
-| **6** | Contradiction detection | Pending |
+| **4** | Evidence retrieval (embeddings + policy search) | Done |
+| **5** | Deterministic policy rules | Done (Current) |
+| **6** | Contradiction detection | Next |
 | **7** | Review generation (Gemini report) | Pending |
 | **8** | Difficult-case testing | Pending |
 | **9** | Hackathon hardening | Pending |

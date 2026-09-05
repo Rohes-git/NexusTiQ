@@ -16,7 +16,7 @@
         <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant</p>
       </div>
       <div class="header-right">
-        <span class="pipeline-tag">Milestone 4 · Policy Grounding</span>
+        <span class="pipeline-tag">Milestone 5 · Deterministic Policy Rules</span>
         <span class="track-badge">PS02</span>
       </div>
     </div>
@@ -137,12 +137,15 @@
         <!-- Dynamically populated -->
       </div>
 
-      <!-- Action: Retrieve Policy -->
+      <!-- Action: Retrieve Policy & Evaluate Rules -->
       <div class="retrieval-action-row" style="margin-top: 24px;">
         <button type="button" class="btn-primary" id="btn-retrieve-policy">
           🔍 Retrieve Relevant Policy
         </button>
-        <span class="action-note">Grounds extracted facts against the 16-clause policy via vector retrieval</span>
+        <button type="button" class="btn-primary" id="btn-evaluate-rules" style="background-color: #0f766e;">
+          ⚖️ Evaluate Policy Rules
+        </button>
+        <span class="action-note">Deterministic evaluation against 16 canonical policy clauses</span>
       </div>
 
       <div class="extraction-disclaimer">
@@ -172,6 +175,33 @@
         <div>
           <strong>Policy Grounding Note:</strong>
           <span>Retrieval identifies relevant policy clauses. It does not determine claim eligibility or make approval/rejection decisions.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Policy Rules Evaluation Section (Milestone 5) ───────────── -->
+    <section class="card rule-evaluation-card hidden" id="rule-evaluation-card">
+      <div class="card-header-row">
+        <h2 class="card-title">Deterministic Policy Rule Findings</h2>
+        <span class="subtle-badge">100% Deterministic Policy Logic</span>
+      </div>
+
+      <!-- Summary metrics banner -->
+      <div class="rule-metrics-banner" id="rule-metrics-banner">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Findings List -->
+      <div class="rule-findings-list" id="rule-findings-list">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Non-adjudication disclaimer -->
+      <div class="rule-disclaimer">
+        <span class="info-icon">🛡️</span>
+        <div>
+          <strong>Deterministic Rule Evaluation Notice:</strong>
+          <span>Rule evaluation checks specific policy conditions and highlights missing evidence or warnings (e.g. late notification). It strictly does not make final claim adjudication decisions (APPROVE / REJECT / DENY).</span>
         </div>
       </div>
     </section>
@@ -225,7 +255,7 @@
 
   <!-- ── Footer ────────────────────────────────────────────────────── -->
   <footer class="footer">
-    <p>ClaimLens v0.1 · Milestone 4 · Evidence first. Decisions second.</p>
+    <p>ClaimLens v0.1 · Milestone 5 · Evidence first. Decisions second.</p>
   </footer>
 
   <script src="/static/app.js"></script>

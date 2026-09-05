@@ -144,6 +144,15 @@ class PolicyRetrievalRequest(BaseModel):
     top_k: int = Field(5, ge=1, le=16, description="Number of relevant clauses to retrieve")
 
 
+class PolicyEvaluationRequest(BaseModel):
+    """Request payload for /api/evaluate-policy."""
+    facts: Optional[list[ExtractedFact]] = None
+    claim_facts: Optional[dict[str, Any]] = None
+    documents: Optional[list[str]] = None
+    claim_id: Optional[str] = None
+    retrieved_clauses: Optional[list[Any]] = None
+
+
 # ── Domain models ─────────────────────────────────────────────────────────
 
 class Evidence(BaseModel):

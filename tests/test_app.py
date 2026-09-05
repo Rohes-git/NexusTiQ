@@ -147,16 +147,10 @@ def test_review_engine_placeholder():
 
 
 def test_placeholders_raise_not_implemented():
-    """Unimplemented service methods should raise NotImplementedError cleanly."""
+    """Unimplemented future milestone methods should raise NotImplementedError cleanly."""
     extractor = GeminiExtractor()
     with pytest.raises(NotImplementedError):
         extractor.extract_claim_facts(Document())
-
-    with pytest.raises(NotImplementedError):
-        evaluate_coverage(ClaimFacts(), [])
-
-    with pytest.raises(NotImplementedError):
-        check_document_completeness([])
 
     with pytest.raises(NotImplementedError):
         detect_contradictions(ClaimFacts(), [])

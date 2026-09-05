@@ -31,6 +31,7 @@ from src.models import (
     ExtractionResponse,
     ExtractionError,
     PolicyRetrievalRequest,
+    PolicyEvaluationRequest,
 )
 from src.retrieval.policy_retriever import (
     PolicyRetriever,
@@ -39,6 +40,10 @@ from src.retrieval.policy_retriever import (
 from src.retrieval.grounding import (
     PolicyRetrievalResponse,
     GroundedClause,
+)
+from src.rules.rule_engine import (
+    PolicyRuleEngine,
+    PolicyEvaluationResult,
 )
 
 logger = logging.getLogger("claimlens")
@@ -213,6 +218,36 @@ async def retrieve_policy(request: PolicyRetrievalRequest):
         return PolicyRetrievalResponse(
             success=False,
             error="An unexpected error occurred during policy clause retrieval.",
+        )
+
+
+@app.post("/api/evaluate-policy")
+async def evaluate_policy(request: PolicyEvaluationRequest):
+    """Deterministically evaluate policy rules against claim facts and documents."""
+    facts = request.facts if request.facts is not None else request.claim_facts
+
+    try:
+        engine = PolicyRuleEngine()
+        result = engine.evaluate(
+            facts=facts,
+            documents=request.documents,
+            claim_id=request.claim_id,
+            retrieved_clauses=request.retrieved_clauses,
+        )
+        return {
+            "success": True,
+            "claim_id": result.claim_id,
+            "findings": result.findings,
+            "summary": result.summary,
+        }
+    except Exception as e:
+        logger.error(f"Error evaluating policy rules: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": f"Failed to evaluate policy rules: {str(e)}",
+            },
         )
 
 

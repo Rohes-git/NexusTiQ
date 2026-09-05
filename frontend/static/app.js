@@ -1,52 +1,67 @@
 /* ================================================================
-   ClaimLens — app.js (Milestone 3)
-   Handles single-document fact extraction via Gemini and claim submission.
-   No external libraries.
+   ClaimLens — app.js
+   Handles:
+   - Document fact extraction via Gemini (Milestone 3)
+   - Semantic policy retrieval & clause grounding (Milestone 4)
+   - Deterministic policy rule evaluation (Milestone 5)
+   - Claim submission pipeline tracking
+   No external JS libraries.
    ================================================================ */
 
 (function () {
   "use strict";
 
   // ── DOM References ──────────────────────────────────────────────
-  const form = document.getElementById("claim-form");
-  const reviewBtn = document.getElementById("review-btn");
-  const feedback = document.getElementById("submit-feedback");
+  var form = document.getElementById("claim-form");
+  var reviewBtn = document.getElementById("review-btn");
+  var feedback = document.getElementById("submit-feedback");
 
-  const claimFormInput = document.getElementById("claim-form-file");
-  const repairInput = document.getElementById("repair-estimate-file");
-  const descriptionInput = document.getElementById("incident-description");
+  var claimFormInput = document.getElementById("claim-form-file");
+  var repairInput = document.getElementById("repair-estimate-file");
+  var descriptionInput = document.getElementById("incident-description");
+  var claimIdInput = document.getElementById("claim-id");
 
-  const claimFormName = document.getElementById("claim-form-name");
-  const repairEstimateName = document.getElementById("repair-estimate-name");
+  var claimFormName = document.getElementById("claim-form-name");
+  var repairEstimateName = document.getElementById("repair-estimate-name");
 
-  const btnExtractClaimForm = document.getElementById("btn-extract-claim-form");
-  const btnExtractRepair = document.getElementById("btn-extract-repair-estimate");
-  const btnRetrievePolicy = document.getElementById("btn-retrieve-policy");
+  var btnExtractClaimForm = document.getElementById("btn-extract-claim-form");
+  var btnExtractRepair = document.getElementById("btn-extract-repair-estimate");
+  var btnRetrievePolicy = document.getElementById("btn-retrieve-policy");
+  var btnEvaluateRules = document.getElementById("btn-evaluate-rules");
 
-  const extractionCard = document.getElementById("extraction-results-card");
-  const extractDocTypeBadge = document.getElementById("extract-doc-type-badge");
-  const metaFilename = document.getElementById("meta-filename");
-  const metaPages = document.getElementById("meta-pages");
-  const summaryGrid = document.getElementById("summary-grid");
-  const evidenceList = document.getElementById("evidence-list");
+  var extractionCard = document.getElementById("extraction-results-card");
+  var extractDocTypeBadge = document.getElementById("extract-doc-type-badge");
+  var metaFilename = document.getElementById("meta-filename");
+  var metaPages = document.getElementById("meta-pages");
+  var summaryGrid = document.getElementById("summary-grid");
+  var evidenceList = document.getElementById("evidence-list");
 
-  const policyResultsCard = document.getElementById("policy-results-card");
-  const policyQueryText = document.getElementById("policy-query-text");
-  const groundedClausesList = document.getElementById("grounded-clauses-list");
+  var policyResultsCard = document.getElementById("policy-results-card");
+  var policyQueryText = document.getElementById("policy-query-text");
+  var groundedClausesList = document.getElementById("grounded-clauses-list");
 
-  const statusClaimForm = document.getElementById("status-claim-form");
-  const statusRepairEstimate = document.getElementById("status-repair-estimate");
-  const statusDescription = document.getElementById("status-description");
-  const policyStatus = document.getElementById("policy-status");
+  var ruleEvaluationCard = document.getElementById("rule-evaluation-card");
+  var ruleMetricsBanner = document.getElementById("rule-metrics-banner");
+  var ruleFindingsList = document.getElementById("rule-findings-list");
+
+  var statusClaimForm = document.getElementById("status-claim-form");
+  var statusRepairEstimate = document.getElementById("status-repair-estimate");
+  var statusDescription = document.getElementById("status-description");
+  var policyStatus = document.getElementById("policy-status");
 
   var currentExtractedFacts = [];
+  var uploadedDocumentNames = [];
 
   // ── File-name and Button State Binding ──────────────────────────
   function bindFileInput(input, nameEl, btnEl) {
     input.addEventListener("change", function () {
       if (input.files.length) {
-        nameEl.textContent = input.files[0].name;
+        var fname = input.files[0].name;
+        nameEl.textContent = fname;
         btnEl.disabled = false;
+        if (uploadedDocumentNames.indexOf(fname) === -1) {
+          uploadedDocumentNames.push(fname);
+        }
       } else {
         nameEl.textContent = "";
         btnEl.disabled = true;
@@ -57,7 +72,9 @@
 
   bindFileInput(claimFormInput, claimFormName, btnExtractClaimForm);
   bindFileInput(repairInput, repairEstimateName, btnExtractRepair);
-  descriptionInput.addEventListener("input", updateReviewPreview);
+  if (descriptionInput) {
+    descriptionInput.addEventListener("input", updateReviewPreview);
+  }
 
   // ── Drag & Drop UI ──────────────────────────────────────────────
   document.querySelectorAll(".file-upload").forEach(function (zone) {
@@ -91,7 +108,7 @@
       statusRepairEstimate.className = "badge badge-empty";
     }
 
-    if (descriptionInput.value.trim()) {
+    if (descriptionInput && descriptionInput.value.trim()) {
       statusDescription.textContent = "Provided";
       statusDescription.className = "badge badge-received";
     } else {
@@ -100,7 +117,7 @@
     }
   }
 
-  // ── Extract Document Facts via API ──────────────────────────────
+  // ── Extract Document Facts via API (Milestone 3) ────────────────
   async function extractDocumentFacts(file, triggerBtn) {
     if (!file) return;
 
@@ -340,30 +357,135 @@
     }
   }
 
-      var confPill = document.createElement("span");
-      confPill.className = "conf-pill";
-      confPill.textContent = Math.round(fact.confidence * 100) + "% confidence";
-      pills.appendChild(confPill);
+  // ── Policy Rules Evaluation (Milestone 5) ───────────────────────
+  if (btnEvaluateRules) {
+    btnEvaluateRules.addEventListener("click", async function () {
+      if (!currentExtractedFacts || currentExtractedFacts.length === 0) {
+        showFeedback("error", "Please extract facts from a document first before running policy rule evaluation.");
+        return;
+      }
 
-      var validBadge = document.createElement("span");
-      validBadge.className = "badge " + (fact.evidence_valid ? "badge-success" : "badge-error");
-      validBadge.textContent = fact.evidence_valid ? "✓ Verified in source" : "✗ Unverified quote";
-      pills.appendChild(validBadge);
+      btnEvaluateRules.disabled = true;
+      var originalText = btnEvaluateRules.textContent;
+      btnEvaluateRules.textContent = "Evaluating Rules…";
+      feedback.classList.add("hidden");
 
-      header.appendChild(title);
-      header.appendChild(pills);
+      var claimIdVal = claimIdInput ? claimIdInput.value.trim() : "";
 
-      var quoteBox = document.createElement("div");
-      quoteBox.className = "quote-box";
-      quoteBox.textContent = fact.evidence_text || "(No evidence quote provided)";
+      try {
+        var response = await fetch("/api/evaluate-policy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            facts: currentExtractedFacts,
+            documents: uploadedDocumentNames,
+            claim_id: claimIdVal || undefined,
+          }),
+        });
 
-      item.appendChild(header);
-      item.appendChild(quoteBox);
-      evidenceList.appendChild(item);
+        var data = await response.json();
+
+        if (!data.success) {
+          showFeedback("error", data.error || "Failed to evaluate policy rules.");
+          ruleEvaluationCard.classList.add("hidden");
+        } else {
+          renderRuleEvaluationResults(data);
+        }
+      } catch (err) {
+        showFeedback("error", "Error connecting to policy rule engine: " + err.message);
+        ruleEvaluationCard.classList.add("hidden");
+      } finally {
+        btnEvaluateRules.disabled = false;
+        btnEvaluateRules.textContent = originalText;
+      }
+    });
+  }
+
+  function renderRuleEvaluationResults(data) {
+    var summary = data.summary || {};
+    ruleMetricsBanner.innerHTML = `
+      <div class="rule-metric-item"><span class="badge badge-pass">✓ ${summary.pass_count || 0} PASS</span></div>
+      <div class="rule-metric-item"><span class="badge badge-fail">✗ ${summary.fail_count || 0} FAIL</span></div>
+      <div class="rule-metric-item"><span class="badge badge-warning">⚠ ${summary.warning_count || 0} WARNING</span></div>
+      <div class="rule-metric-item"><span class="badge badge-insufficient">? ${summary.insufficient_evidence_count || 0} INSUFFICIENT</span></div>
+      <div class="rule-metric-item"><span class="badge badge-na">— ${summary.not_applicable_count || 0} N/A</span></div>
+      <div class="rule-metric-item" style="margin-left: auto; color: #64748b; font-size: 0.8rem;">
+        Total Rules: <strong>${summary.total_rules_checked || 0}</strong>
+      </div>
+    `;
+
+    ruleFindingsList.innerHTML = "";
+    (data.findings || []).forEach(function (finding) {
+      var card = document.createElement("div");
+      var statusClass = "status-" + String(finding.status).toLowerCase();
+      card.className = "rule-finding-card " + statusClass;
+
+      // Header row
+      var header = document.createElement("div");
+      header.className = "finding-header-row";
+
+      var leftMeta = document.createElement("div");
+      leftMeta.className = "finding-left-meta";
+
+      var clauseBadge = document.createElement("span");
+      clauseBadge.className = "finding-clause-badge";
+      clauseBadge.textContent = "Clause " + finding.clause_id;
+
+      var catSpan = document.createElement("span");
+      catSpan.className = "finding-category";
+      catSpan.textContent = finding.category;
+
+      leftMeta.appendChild(clauseBadge);
+      leftMeta.appendChild(catSpan);
+
+      var statusBadge = document.createElement("span");
+      var badgeClassMap = {
+        PASS: "badge-pass",
+        FAIL: "badge-fail",
+        WARNING: "badge-warning",
+        INSUFFICIENT_EVIDENCE: "badge-insufficient",
+        NOT_APPLICABLE: "badge-na",
+      };
+      statusBadge.className = "badge " + (badgeClassMap[finding.status] || "badge-empty");
+      statusBadge.textContent = finding.status;
+
+      header.appendChild(leftMeta);
+      header.appendChild(statusBadge);
+
+      // Title & Message
+      var title = document.createElement("div");
+      title.className = "finding-title-text";
+      title.textContent = finding.title;
+
+      var msg = document.createElement("div");
+      msg.className = "finding-message-text";
+      msg.textContent = finding.message;
+
+      card.appendChild(header);
+      card.appendChild(title);
+      card.appendChild(msg);
+
+      // Facts Used details (if any)
+      if (finding.facts_used && finding.facts_used.length > 0) {
+        var factsBox = document.createElement("div");
+        factsBox.className = "finding-facts-used";
+        var factDetails = finding.facts_used.map(function (f) {
+          return f.field_name + ": " + (f.value !== null ? f.value : f.raw_value);
+        }).join(" | ");
+        factsBox.innerHTML = "<strong>Facts Evaluated:</strong> " + factDetails;
+        card.appendChild(factsBox);
+      }
+
+      ruleFindingsList.appendChild(card);
     });
 
-    extractionCard.classList.remove("hidden");
-    extractionCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    ruleEvaluationCard.classList.remove("hidden");
+    ruleEvaluationCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (policyStatus) {
+      policyStatus.textContent = `${summary.total_rules_checked || 0} deterministic policy rules evaluated (${summary.pass_count || 0} PASS, ${summary.fail_count || 0} FAIL, ${summary.warning_count || 0} WARNING)`;
+      policyStatus.className = "text-success font-medium";
+    }
   }
 
   function formatFactValue(fieldName, value) {

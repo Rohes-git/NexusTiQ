@@ -740,6 +740,170 @@ input[type="text"]:focus {
   line-height: 1.4;
 }
 
+/* ── Policy Rule Evaluation (Milestone 5) ───────────────────────── */
+.rule-evaluation-card {
+  border-top: 3px solid #0f766e;
+}
+
+.rule-metrics-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.rule-metric-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.rule-findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rule-finding-card {
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #94a3b8;
+  border-radius: 6px;
+  padding: 14px 16px;
+  background: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rule-finding-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.rule-finding-card.status-pass {
+  border-left-color: #059669;
+}
+
+.rule-finding-card.status-fail {
+  border-left-color: #dc2626;
+}
+
+.rule-finding-card.status-warning {
+  border-left-color: #d97706;
+}
+
+.rule-finding-card.status-insufficient_evidence {
+  border-left-color: #7c3aed;
+}
+
+.rule-finding-card.status-not_applicable {
+  border-left-color: #94a3b8;
+  opacity: 0.85;
+}
+
+.finding-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.finding-left-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.finding-clause-badge {
+  background: #334155;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.finding-category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.badge-pass {
+  background: #d1fae5;
+  color: #065f46;
+  font-weight: 700;
+}
+
+.badge-fail {
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+}
+
+.badge-insufficient {
+  background: #ede9fe;
+  color: #5b21b6;
+  font-weight: 700;
+}
+
+.badge-na {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+}
+
+.finding-title-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 6px 0 4px 0;
+}
+
+.finding-message-text {
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.finding-facts-used {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  color: #475569;
+  margin-top: 6px;
+}
+
+.rule-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  color: #166534;
+  margin-top: 22px;
+  line-height: 1.4;
+}
+
 /* ── Footer ────────────────────────────────────────────────────── */
 .footer {
   text-align: center;
