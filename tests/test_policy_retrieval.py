@@ -185,7 +185,7 @@ def test_vector_index_save_and_load(tmp_path):
     embeddings = [[0.6, 0.8], [0.8, 0.6]]
 
     index = VectorIndex()
-    index.build([c1, c2], embeddings, "test_hash_123", "text-embedding-004")
+    index.build([c1, c2], embeddings, "test_hash_123", "gemini-embedding-2")
 
     cache_file = tmp_path / "test_embeddings.json"
     index.save(cache_file)
@@ -196,11 +196,11 @@ def test_vector_index_save_and_load(tmp_path):
 
     assert loaded_index.is_built is True
     assert loaded_index.policy_hash == "test_hash_123"
-    assert loaded_index.embedding_model == "text-embedding-004"
+    assert loaded_index.embedding_model == "gemini-embedding-2"
     assert loaded_index.dimension == 2
     assert len(loaded_index.clauses) == 2
-    assert loaded_index.is_valid_for("test_hash_123", "text-embedding-004") is True
-    assert loaded_index.is_valid_for("wrong_hash", "text-embedding-004") is False
+    assert loaded_index.is_valid_for("test_hash_123", "gemini-embedding-2") is True
+    assert loaded_index.is_valid_for("wrong_hash", "gemini-embedding-2") is False
     assert loaded_index.is_valid_for("test_hash_123", "different-model") is False
 
 
@@ -425,3 +425,96 @@ def test_retrieve_policy_endpoint_with_mock_cache(tmp_path, monkeypatch):
     assert all("clause_id" in c for c in data["clauses"])
     assert all("similarity_score" in c for c in data["clauses"])
     assert all("reason" in c for c in data["clauses"])
+
+
+# ── 8. Environment & Model Configuration Tests ───────────────────────────
+
+def test_default_embedding_model_is_gemini_embedding_2():
+    """Default embedding model in Settings must be gemini-embedding-2."""
+    from src.config import Settings
+    s = Settings()
+    assert s.gemini_embedding_model == "gemini-embedding-2"
+
+
+def test_env_loading_from_custom_file(tmp_path):
+    """load_settings correctly reads values from a custom .env file."""
+    from src.config import load_settings
+
+    custom_env = tmp_path / "custom.env"
+    custom_env.write_text("GEMINI_EMBEDDING_MODEL=custom-embedding-model\n", encoding="utf-8")
+
+    loaded_settings = load_settings(env_path=custom_env, override=True)
+    assert loaded_settings.gemini_embedding_model == "custom-embedding-model"
+
+
+def test_configurable_embedding_model_via_env(monkeypatch):
+    """GEMINI_EMBEDDING_MODEL environment variable overrides default."""
+    from src.config import load_settings
+
+    monkeypatch.setenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-2-preview")
+    loaded = load_settings()
+    assert loaded.gemini_embedding_model == "gemini-embedding-2-preview"
+
+    # EmbeddingService picks up configured model
+    service = EmbeddingService(api_key="test-key", model=loaded.gemini_embedding_model)
+    assert service.model == "gemini-embedding-2-preview"
+
+
+def test_missing_gemini_api_key_handling():
+    """Missing or empty GEMINI_API_KEY is detected cleanly."""
+    from src.config import Settings
+
+    empty_settings = Settings(gemini_api_key="")
+    assert empty_settings.gemini_configured is False
+
+    whitespace_settings = Settings(gemini_api_key="   ")
+    assert whitespace_settings.gemini_configured is False
+
+    service = EmbeddingService(api_key="")
+    with pytest.raises(GeminiNotConfiguredError):
+        service.embed_text("Sample query text")
+
+
+def test_stale_cache_invalidated_when_model_changes(tmp_path):
+    """Vector index cache with old model is invalidated and rebuilt with new model."""
+    loader = PolicyClauseLoader(POLICY_JSON_PATH)
+    clauses = loader.load_clauses()
+    policy_hash = loader.compute_policy_hash()
+
+    # 1. Create an old cache file built with 'text-embedding-004'
+    old_cache = tmp_path / "policy_embeddings.json"
+    old_embedder = MockEmbeddingService(dimension=16)
+    old_embeddings = old_embedder.embed_texts([f"{c.title}" for c in clauses])
+
+    old_index = VectorIndex()
+    old_index.build(clauses, old_embeddings, policy_hash, "text-embedding-004")
+    old_index.save(old_cache)
+
+    # Verify old cache is invalid for gemini-embedding-2
+    check_index = VectorIndex()
+    check_index.load(old_cache)
+    assert check_index.is_valid_for(policy_hash, "gemini-embedding-2") is False
+    assert check_index.is_valid_for(policy_hash, "text-embedding-004") is True
+
+    # 2. Re-run PolicyRetriever configured with 'gemini-embedding-2'
+    new_embedder = MockEmbeddingService(dimension=32)
+    new_embedder.model = "gemini-embedding-2"
+
+    retriever = PolicyRetriever(
+        loader=loader,
+        embedder=new_embedder,
+        cache_path=old_cache,
+    )
+
+    # ensure_index should detect stale model and rebuild with gemini-embedding-2
+    index = retriever.ensure_index()
+    assert index.is_built is True
+    assert index.embedding_model == "gemini-embedding-2"
+    assert index.dimension == 32
+
+    # Verify cache file was updated on disk
+    reloaded_index = VectorIndex()
+    reloaded_index.load(old_cache)
+    assert reloaded_index.embedding_model == "gemini-embedding-2"
+    assert reloaded_index.is_valid_for(policy_hash, "gemini-embedding-2") is True
+    assert reloaded_index.is_valid_for(policy_hash, "text-embedding-004") is False

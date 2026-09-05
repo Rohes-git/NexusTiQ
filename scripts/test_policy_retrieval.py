@@ -17,6 +17,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=BASE_DIR / ".env", override=False)
+except ImportError:
+    pass
+
 from src.config import settings
 from src.retrieval.policy_retriever import PolicyRetriever, PolicyRetrieverError
 

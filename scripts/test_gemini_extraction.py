@@ -11,6 +11,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=BASE_DIR / ".env", override=False)
+except ImportError:
+    pass
+
 from src.config import settings
 from src.extraction.document_loader import DocumentLoader
 from src.extraction.gemini_extractor import GeminiExtractor, GeminiNotConfiguredError

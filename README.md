@@ -17,7 +17,7 @@ ClaimLens is an evidence-first review assistant for motor insurance claims invol
 This milestone implements semantic policy clause retrieval and factual clause grounding:
 
 - **Policy Clause Indexing**: Loads the 16-clause synthetic motor policy, preserving clause IDs (e.g., `2.1`, `3.2`), section names, titles, and exact clause text, while computing a canonical SHA-256 hash for cache invalidation.
-- **Gemini Embeddings & Local Caching**: Uses `google-genai` embedding API (`text-embedding-004`) to generate dense vector embeddings, cached locally at `data/policy/policy_embeddings.json` with hash and model validity checks.
+- **Gemini Embeddings & Local Caching**: Uses `google-genai` embedding API (`gemini-embedding-2`) to generate dense vector embeddings, cached locally at `data/policy/policy_embeddings.json` with hash and model validity checks.
 - **Factual Semantic Query Construction**: Converts extracted claim facts (incident type, vehicle details, dates, financial amounts) into targeted search queries without fabricating facts or making premature coverage conclusions.
 - **Local Vector Search**: Lightweight NumPy-based cosine similarity index ranking relevant clauses deterministically.
 - **Clause Grounding Layer**: Attaches deterministic, factual relevance rationale to each retrieved clause (strictly avoiding approval/rejection or fraud determinations).
@@ -114,6 +114,7 @@ tests/                                      # Pytest test suite
 - `uvicorn`
 - `pydantic`
 - `python-multipart`
+- `python-dotenv`
 - `reportlab`
 - `pymupdf`
 - `google-genai`
@@ -159,7 +160,7 @@ python -m pytest tests/ -v
 |---|---|---|
 | `GEMINI_API_KEY` | Optional for running/testing offline (Required for live Gemini extraction) | Google Gemini API key. If unset, unit tests run against offline fixtures and the API gracefully reports `GEMINI_UNAVAILABLE`. |
 | `GEMINI_MODEL` | No (Default: `gemini-2.0-flash`) | Gemini model identifier used for extraction. |
-| `GEMINI_EMBEDDING_MODEL` | No (Default: `text-embedding-004`) | Gemini embedding model used for vector retrieval. |
+| `GEMINI_EMBEDDING_MODEL` | No (Default: `gemini-embedding-2`) | Gemini embedding model used for vector retrieval. |
 
 ---
 

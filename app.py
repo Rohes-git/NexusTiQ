@@ -11,7 +11,8 @@ from typing import Optional
 import uvicorn
 import logging
 
-from src.config import settings
+# Ensure root .env is loaded safely before accessing settings
+from src.config import settings, ROOT_ENV_PATH
 from src.extraction.document_loader import (
     DocumentLoader,
     DocumentLoaderError,
