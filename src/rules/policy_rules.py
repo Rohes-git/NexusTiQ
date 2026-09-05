@@ -89,6 +89,16 @@ def extract_fact_dict(
                     evidence_text=v.get("evidence_text", ""),
                     page_number=v.get("page_number"),
                 )
+            elif isinstance(v, dict) and k in ["claim_form", "repair_estimate", "fir"]:
+                # Nested document subdict (e.g. metadata.json format)
+                for sub_k, sub_v in v.items():
+                    if sub_k not in fact_dict:
+                        fact_dict[sub_k] = sub_v
+                        fact_objs[sub_k] = FactUsed(
+                            field_name=sub_k,
+                            value=sub_v,
+                            raw_value=str(sub_v) if sub_v is not None else None,
+                        )
             else:
                 fact_dict[k] = v
                 fact_objs[k] = FactUsed(

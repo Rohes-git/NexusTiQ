@@ -33,6 +33,7 @@ from src.models import (
     PolicyRetrievalRequest,
     PolicyEvaluationRequest,
     EvidenceAnalysisRequest,
+    ReviewGenerationRequest,
 )
 from src.retrieval.policy_retriever import (
     PolicyRetriever,
@@ -49,6 +50,15 @@ from src.rules.rule_engine import (
 from src.analysis.evidence_review import (
     EvidenceReviewEngine,
     EvidenceReviewResult,
+)
+from src.review.recommendation_engine import (
+    ReviewRecommendationEngine,
+    ReviewRecommendation,
+    ReviewStatus,
+)
+from src.report.audit_report import (
+    AuditReport,
+    AuditReportGenerator,
 )
 
 logger = logging.getLogger("claimlens")
@@ -308,6 +318,80 @@ async def analyze_evidence(request: EvidenceAnalysisRequest):
             content={
                 "success": False,
                 "error": f"Failed to analyze evidence: {str(e)}",
+            },
+        )
+
+
+@app.post("/api/generate-review")
+async def generate_review(request: ReviewGenerationRequest):
+    """Generate a complete structured audit report and review recommendation."""
+    facts = request.facts if request.facts is not None else request.claim_facts
+    claim_id = request.claim_id or "CLM-UNKNOWN"
+    documents = request.documents or []
+    retrieved_clauses = request.retrieved_clauses or []
+    policy_findings = request.policy_findings or []
+    contradictions = request.contradictions or []
+    completeness = request.completeness or request.completeness_findings or []
+
+    try:
+        # If retrieved clauses are missing and facts are present, retrieve them
+        if not retrieved_clauses and facts:
+            try:
+                retriever = PolicyRetriever()
+                _, retrieved_clauses = retriever.retrieve_relevant_clauses(facts, top_k=5)
+            except Exception as e:
+                logger.warning(f"Auto-retrieval in review generation failed: {e}")
+
+        # If policy findings are missing and facts/documents are present, evaluate rules
+        if not policy_findings and facts:
+            try:
+                rule_engine = PolicyRuleEngine()
+                eval_res = rule_engine.evaluate(
+                    facts=facts,
+                    documents=documents,
+                    claim_id=claim_id,
+                    retrieved_clauses=retrieved_clauses,
+                )
+                policy_findings = eval_res.findings
+            except Exception as e:
+                logger.warning(f"Auto policy evaluation in review generation failed: {e}")
+
+        # If evidence analysis (contradictions/completeness) is missing and facts/documents present, run analysis
+        if (not contradictions and not completeness) and facts:
+            try:
+                ev_engine = EvidenceReviewEngine()
+                ev_res = ev_engine.analyze(
+                    claim_id=claim_id,
+                    facts=facts,
+                    documents=documents,
+                )
+                contradictions = ev_res.contradictions
+                completeness = ev_res.completeness
+            except Exception as e:
+                logger.warning(f"Auto evidence analysis in review generation failed: {e}")
+
+        generator = AuditReportGenerator()
+        report = generator.generate_report(
+            claim_id=claim_id,
+            facts=facts,
+            documents=documents,
+            retrieved_clauses=retrieved_clauses,
+            policy_findings=policy_findings,
+            contradictions=contradictions,
+            completeness_findings=completeness,
+        )
+
+        return {
+            "success": True,
+            "report": report.model_dump(),
+        }
+    except Exception as e:
+        logger.error(f"Error generating review audit report: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": f"Failed to generate audit report: {str(e)}",
             },
         )
 

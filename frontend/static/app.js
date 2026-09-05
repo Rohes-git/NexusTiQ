@@ -9,6 +9,15 @@
    ================================================================ */
 
 (function () {
+  // ── Demo Actions ────────────────────────────────────────────────
+  function applyDemoClaim(claimId) {
+    if (claimIdInput) claimIdInput.value = claimId;
+    showFeedback("info", "Preloaded Demo Claim: " + claimId + ". (Note: Extraction requires PDF upload for this demo context)");
+  }
+  if (document.getElementById("btn-demo-clm-001")) document.getElementById("btn-demo-clm-001").addEventListener("click", () => applyDemoClaim("CLM-001"));
+  if (document.getElementById("btn-demo-clm-002")) document.getElementById("btn-demo-clm-002").addEventListener("click", () => applyDemoClaim("CLM-002"));
+  if (document.getElementById("btn-demo-clm-003")) document.getElementById("btn-demo-clm-003").addEventListener("click", () => applyDemoClaim("CLM-003"));
+
   "use strict";
 
   // ── DOM References ──────────────────────────────────────────────
@@ -29,6 +38,11 @@
   var btnRetrievePolicy = document.getElementById("btn-retrieve-policy");
   var btnEvaluateRules = document.getElementById("btn-evaluate-rules");
   var btnAnalyzeEvidence = document.getElementById("btn-analyze-evidence");
+  var btnGenerateReview = document.getElementById("btn-generate-review-card");
+  var finalReviewCard = document.getElementById("final-review-card");
+  var recommendationStatus = document.getElementById("recommendation-status");
+  var btnPipelineStart = document.getElementById("btn-pipeline-start");
+
 
   var extractionCard = document.getElementById("extraction-results-card");
   var extractDocTypeBadge = document.getElementById("extract-doc-type-badge");
@@ -101,6 +115,26 @@
       zone.classList.remove("dragover");
     });
   });
+
+  
+  // ── Stepper UI ──────────────────────────────────────────────────
+  function updateStepNode(step) {
+    for (var i = 1; i <= 6; i++) {
+        var node = document.getElementById("step-node-" + i);
+        var line = document.getElementById("step-line-" + i);
+        if (node) {
+            if (i < step) { node.classList.add("completed"); node.classList.remove("active"); if (line) line.classList.add("completed"); }
+            else if (i === step) { node.classList.add("active"); node.classList.remove("completed"); if (line) line.classList.remove("completed"); }
+            else { node.classList.remove("active"); node.classList.remove("completed"); if (line) line.classList.remove("completed"); }
+        }
+    }
+  }
+
+  // Bind step updates
+  if (btnExtractClaimForm) btnExtractClaimForm.addEventListener("click", () => updateStepNode(2));
+  if (btnRetrievePolicy) btnRetrievePolicy.addEventListener("click", () => updateStepNode(3));
+  if (btnEvaluateRules) btnEvaluateRules.addEventListener("click", () => updateStepNode(4));
+  if (btnAnalyzeEvidence) btnAnalyzeEvidence.addEventListener("click", () => updateStepNode(5));
 
   // ── Live Review Preview Updates ─────────────────────────────────
   function updateReviewPreview() {
@@ -786,38 +820,224 @@
     feedback.classList.remove("hidden");
   }
 
-  // ── Full Review Submission Handler ──────────────────────────────
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
+  // ── Final Review Generation (Milestone 7 / Step 6) ──────────────
+  if (btnGenerateReview) {
+    btnGenerateReview.addEventListener("click", async function () {
+      btnGenerateReview.disabled = true;
+      var originalText = btnGenerateReview.textContent;
+      btnGenerateReview.textContent = "Generating Audit Report…";
+      feedback.classList.add("hidden");
 
-    reviewBtn.disabled = true;
-    reviewBtn.textContent = "Submitting…";
-    feedback.classList.add("hidden");
+      var claimIdVal = claimIdInput ? claimIdInput.value.trim() : "";
+      var docKeys = Object.keys(extractedDocsMap);
+      var payloadFacts = null;
 
-    var formData = new FormData(form);
+      if (docKeys.length > 1) {
+        payloadFacts = Object.values(extractedDocsMap);
+      } else if (docKeys.length === 1) {
+        payloadFacts = extractedDocsMap[docKeys[0]].facts;
+      } else if (currentExtractedFacts && currentExtractedFacts.length > 0) {
+        payloadFacts = currentExtractedFacts;
+      }
 
-    try {
-      var response = await fetch("/api/claims/review", {
-        method: "POST",
-        body: formData,
+      var docList = uploadedDocumentNames.slice();
+      docKeys.forEach(function (k) {
+        if (docList.indexOf(k) === -1) docList.push(k);
       });
 
-      var data = await response.json();
+      try {
+        var response = await fetch("/api/generate-review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            facts: payloadFacts,
+            documents: docList,
+            claim_id: claimIdVal || undefined,
+          }),
+        });
 
-      feedback.className = "feedback info";
-      feedback.innerHTML =
-        "<strong>Received.</strong> " +
-        data.message +
-        (data.documents_received && data.documents_received.length
-          ? "<br>Documents: " +
-            data.documents_received.map(function (d) { return d.filename; }).join(", ")
-          : "");
-      feedback.classList.remove("hidden");
-    } catch (err) {
-      showFeedback("info", "Review engine will be connected in a later milestone.");
-    } finally {
-      reviewBtn.disabled = false;
-      reviewBtn.textContent = "Submit for Full Review";
+        var data = await response.json();
+        if (!data.success) {
+          showFeedback("error", data.error || "Failed to generate audit report.");
+          if (finalReviewCard) finalReviewCard.classList.add("hidden");
+        } else {
+          renderFinalReview(data.report);
+        }
+      } catch (err) {
+        showFeedback("error", "Error connecting to review generator: " + err.message);
+        if (finalReviewCard) finalReviewCard.classList.add("hidden");
+      } finally {
+        btnGenerateReview.disabled = false;
+        btnGenerateReview.textContent = originalText;
+      }
+    });
+  }
+
+  function renderFinalReview(report) {
+    updateStepNode(6);
+    var statusContainer = document.getElementById("review-status-container");
+    var statusBadge = document.getElementById("review-status-badge");
+    var statusReason = document.getElementById("review-status-reason");
+    var rec = report.recommendation || {};
+    var rawStatus = rec.status || "READY_FOR_REVIEW";
+
+    if (statusContainer) statusContainer.className = "review-status-container status-" + String(rawStatus).toLowerCase();
+    if (statusBadge) statusBadge.textContent = String(rawStatus).replace(/_/g, " ");
+    if (statusReason) statusReason.textContent = rec.reason || "";
+    var tsEl = document.getElementById("report-timestamp");
+    if (tsEl) tsEl.textContent = "Generated: " + new Date(report.generated_at).toLocaleString();
+
+    // 1. Claim Review Summary Grid
+    var summaryGrid = document.getElementById("report-summary-grid");
+    if (summaryGrid) {
+      summaryGrid.innerHTML = `
+        <div class="fact-card"><div class="fact-label">Claim Reference</div><div class="fact-value">${report.claim_id || "N/A"}</div></div>
+        <div class="fact-card"><div class="fact-label">Claim Type</div><div class="fact-value">${report.claim_type || "UNKNOWN"}</div></div>
+        <div class="fact-card"><div class="fact-label">Vehicle Registration</div><div class="fact-value">${(report.claim_summary||{}).vehicle_registration || "—"}</div></div>
+        <div class="fact-card"><div class="fact-label">Vehicle Make & Model</div><div class="fact-value">${(report.claim_summary||{}).vehicle_make_model || "—"}</div></div>
+        <div class="fact-card"><div class="fact-label">Incident Date</div><div class="fact-value">${(report.claim_summary||{}).incident_date || "—"}</div></div>
+        <div class="fact-card"><div class="fact-label">Claimed Amount</div><div class="fact-value">${(report.claim_summary||{}).claimed_amount ? '₹' + Number((report.claim_summary||{}).claimed_amount).toLocaleString() : '—'}</div></div>
+        <div class="fact-card"><div class="fact-label">Documents Reviewed</div><div class="fact-value">${(report.claim_summary||{}).document_count || 0} file(s) (${(report.document_inventory||[]).join(', ')})</div></div>
+      `;
     }
-  });
+
+    // 2. WHY THIS STATUS? (1-3 Triggering Findings)
+    var triggerList = document.getElementById("triggering-findings-list");
+    if (triggerList) {
+      triggerList.innerHTML = "";
+      (rec.triggering_findings || []).forEach(function(f) {
+        var item = document.createElement("div");
+        var ftype = String(f.finding_type).toLowerCase();
+        var styleClass = ftype.includes("missing") ? "missing" : ftype.includes("contradiction") ? "contradiction" : "policy_failure";
+        item.className = "triggering-finding-item " + styleClass;
+        var badgeColor = ftype.includes("missing") ? 'badge-missing' : ftype.includes("contradiction") ? 'badge-fail' : 'badge-fail';
+        item.innerHTML = `
+          <div class="trigger-title">
+            <span>${f.title || 'Finding'}</span>
+            <span class="badge ${badgeColor}">${f.severity || ''}</span>
+          </div>
+          <div class="trigger-detail">${f.detail || ''}</div>
+          <div class="fact-raw" style="margin-top:4px;">Source: ${f.source || 'N/A'}</div>
+        `;
+        triggerList.appendChild(item);
+      });
+      if ((rec.triggering_findings || []).length === 0) {
+        triggerList.innerHTML = `<div class="triggering-finding-item" style="border-left-color: #059669; background: #ecfdf5;"><div class="trigger-title"><span style="color: #065f46;">✓ Evidence Package Verified Complete & Consistent</span></div></div>`;
+      }
+    }
+
+    // 3. Policy Findings Summary
+    var policyMetrics = document.getElementById("report-policy-metrics");
+    if (policyMetrics) {
+      var pCount = report.policy_findings ? report.policy_findings.length : 0;
+      var passCount = (report.policy_findings || []).filter(f => String(f.status).toUpperCase() === 'PASS').length;
+      var failCount = (report.policy_findings || []).filter(f => String(f.status).toUpperCase() === 'FAIL').length;
+      var warnCount = (report.policy_findings || []).filter(f => String(f.status).toUpperCase() === 'WARNING').length;
+      var insufCount = (report.policy_findings || []).filter(f => String(f.status).toUpperCase() === 'INSUFFICIENT_EVIDENCE').length;
+      var naCount = (report.policy_findings || []).filter(f => String(f.status).toUpperCase() === 'NOT_APPLICABLE').length;
+
+      policyMetrics.innerHTML = `
+        <div class="rule-metric-item"><span class="badge badge-pass">✓ ${passCount} PASS</span></div>
+        <div class="rule-metric-item"><span class="badge badge-fail">✗ ${failCount} FAIL</span></div>
+        <div class="rule-metric-item"><span class="badge badge-warning">⚠ ${warnCount} WARNING</span></div>
+        <div class="rule-metric-item"><span class="badge badge-insufficient">? ${insufCount} INSUFFICIENT</span></div>
+        <div class="rule-metric-item"><span class="badge badge-na">— ${naCount} N/A</span></div>
+        <div class="rule-metric-item" style="color: #64748b; font-size: 0.8rem; margin-left:auto;">${pCount} deterministic rules evaluated</div>
+      `;
+    }
+
+    // 4. Evidence Issues Breakdown
+    var evIssues = document.getElementById("report-evidence-issues");
+    if (evIssues) {
+      var cCount = report.contradictions ? report.contradictions.length : 0;
+      var mCount = (report.completeness_findings || []).filter(f => String(f.status).toUpperCase() === 'MISSING').length;
+      var incompCount = (report.completeness_findings || []).filter(f => String(f.status).toUpperCase() === 'INCOMPLETE').length;
+
+      evIssues.innerHTML = `
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+          <div class="rule-metric-item"><span class="badge ${cCount > 0 ? 'badge-fail' : 'badge-pass'}">⚡ ${cCount} Contradiction${cCount === 1 ? '' : 's'}</span></div>
+          <div class="rule-metric-item"><span class="badge ${mCount > 0 ? 'badge-missing' : 'badge-pass'}">📋 ${mCount} Missing Required Document${mCount === 1 ? '' : 's'}</span></div>
+          <div class="rule-metric-item"><span class="badge ${incompCount > 0 ? 'badge-warning' : 'badge-pass'}">⚠ ${incompCount} Incomplete Document${incompCount === 1 ? '' : 's'}</span></div>
+        </div>
+      `;
+    }
+
+    // 5. Policy References
+    var clausesList = document.getElementById("report-clauses-list");
+    if (clausesList) {
+      clausesList.innerHTML = "";
+      (report.policy_clauses || []).forEach(function(c) {
+        var item = document.createElement("div");
+        item.className = "report-clause-mini-card";
+        item.innerHTML = `
+          <div class="report-clause-mini-header">
+            <span class="clause-id-badge" style="font-size:0.7rem; padding:2px 6px;">Clause ${c.clause_id}</span>
+            <span>${c.title}</span>
+          </div>
+          <div style="color: #475569; font-size:0.8rem; line-height:1.4;">${c.text}</div>
+        `;
+        clausesList.appendChild(item);
+      });
+      if ((report.policy_clauses || []).length === 0) {
+        clausesList.innerHTML = `<div class="section-subtext">No grounded clauses attached.</div>`;
+      }
+    }
+
+    // 6. Evidence Provenance
+    var evList = document.getElementById("report-evidence-list");
+    if (evList) {
+      evList.innerHTML = "";
+      (report.evidence_references || []).forEach(function(e) {
+        var item = document.createElement("div");
+        item.className = "report-clause-mini-card";
+        item.innerHTML = `
+          <div class="report-clause-mini-header">
+            <span class="page-pill">Page ${e.page_number}</span>
+            <span style="color:#0f172a; font-weight:600;">${e.document_name}</span>
+            <span style="font-weight:400; color:#64748b;">(${e.field_name ? e.field_name.replace(/_/g, " ") : "Evidence"})</span>
+          </div>
+          <div class="quote-box" style="margin-top:6px; font-size:0.78rem;">${e.evidence_text}</div>
+        `;
+        evList.appendChild(item);
+      });
+      if ((report.evidence_references || []).length === 0) {
+        evList.innerHTML = `<div class="section-subtext">No direct quotations attached.</div>`;
+      }
+    }
+
+    // 7. Recommended Action
+    var actionText = document.getElementById("report-action-text");
+    if (actionText) actionText.textContent = rec.recommended_action || "Evidence package is sufficiently complete and internally consistent for standard human review.";
+
+    // 8. Disclaimer
+    var discEl = document.getElementById("report-disclaimer-text");
+    if (discEl && report.disclaimer) discEl.textContent = report.disclaimer;
+
+    if (finalReviewCard) {
+      finalReviewCard.classList.remove("hidden");
+      finalReviewCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    if (recommendationStatus) {
+      recommendationStatus.textContent = String(rawStatus).replace(/_/g, " ");
+      recommendationStatus.className = "font-medium " + (rawStatus === "READY_FOR_REVIEW" ? "text-success" : (rawStatus.includes("ESCALATE") ? "text-error" : "text-warning"));
+    }
+  }
+
+  // ── Run Full Pipeline Handler ───────────────────────────────────
+  if (btnPipelineStart) {
+    btnPipelineStart.addEventListener("click", function () {
+      if (claimFormInput.files.length) {
+        btnExtractClaimForm.click();
+      }
+      if (repairInput.files.length) {
+        btnExtractRepair.click();
+      }
+      setTimeout(function() {
+        if (btnGenerateReview) btnGenerateReview.click();
+      }, 600);
+    });
+  }
+
 })();
+

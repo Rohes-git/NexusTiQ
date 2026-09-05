@@ -83,6 +83,8 @@ def determine_claim_type(
 
     # 2. Description keyword analysis
     desc = facts_dict.get("incident_description")
+    if not desc and isinstance(facts_dict.get("claim_form"), dict):
+        desc = facts_dict["claim_form"].get("incident_description")
     if desc:
         desc_str = str(desc).lower().strip()
         theft_keywords = ["theft", "stolen", "burglary", "housebreaking", "missing overnight", "vehicle was stolen", "not recovered"]
@@ -160,7 +162,7 @@ class CompletenessChecker:
                 has_fir = True
             if "repair_estimate_amount" in facts and facts["repair_estimate_amount"] is not None:
                 has_repair_estimate = True
-            if facts.get("incident_description"):
+            if facts.get("incident_description") or (isinstance(facts.get("claim_form"), dict) and facts["claim_form"].get("incident_description")):
                 has_incident_desc = True
 
         elif isinstance(facts, list):

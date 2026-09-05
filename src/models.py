@@ -162,6 +162,19 @@ class EvidenceAnalysisRequest(BaseModel):
     retrieved_clauses: Optional[list[Any]] = None
 
 
+class ReviewGenerationRequest(BaseModel):
+    """Request payload for /api/generate-review."""
+    claim_id: Optional[str] = None
+    facts: Optional[Any] = None
+    claim_facts: Optional[dict[str, Any]] = None
+    documents: Optional[list[Any]] = None
+    retrieved_clauses: Optional[list[Any]] = None
+    policy_findings: Optional[list[Any]] = None
+    contradictions: Optional[list[Any]] = None
+    completeness: Optional[list[Any]] = None
+    completeness_findings: Optional[list[Any]] = None
+
+
 # ── Domain models ─────────────────────────────────────────────────────────
 
 class Evidence(BaseModel):

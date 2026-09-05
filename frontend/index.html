@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ClaimLens — Evidence Review Assistant</title>
+  <title>ClaimLens — Motor Insurance Claims Evidence Review Assistant</title>
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
@@ -13,25 +13,77 @@
     <div class="header-inner">
       <div class="brand">
         <h1 class="brand-name">Claim<span class="brand-accent">Lens</span></h1>
-        <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant</p>
+        <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant — PS02</p>
       </div>
       <div class="header-right">
-        <span class="pipeline-tag">Milestone 6 · Contradiction & Completeness Engine</span>
-        <span class="track-badge">PS02</span>
+        <span class="pipeline-tag">Full 6-Step Review Pipeline</span>
+        <span class="track-badge">PS02 Judge Ready</span>
       </div>
     </div>
   </header>
 
   <main class="main">
 
-    <!-- ── Submit & Ingest Card ────────────────────────────────────── -->
-    <section class="card submit-card">
+    <!-- ── 6-Step Workflow Progress Bar ────────────────────────────── -->
+    <section class="workflow-stepper-card">
+      <div class="stepper-track">
+        <div class="step-node active" id="step-node-1">
+          <div class="step-num">1</div>
+          <div class="step-label">Submit Claim</div>
+        </div>
+        <div class="step-line" id="step-line-1"></div>
+        <div class="step-node" id="step-node-2">
+          <div class="step-num">2</div>
+          <div class="step-label">Extract Evidence</div>
+        </div>
+        <div class="step-line" id="step-line-2"></div>
+        <div class="step-node" id="step-node-3">
+          <div class="step-num">3</div>
+          <div class="step-label">Ground Policy</div>
+        </div>
+        <div class="step-line" id="step-line-3"></div>
+        <div class="step-node" id="step-node-4">
+          <div class="step-num">4</div>
+          <div class="step-label">Evaluate Rules</div>
+        </div>
+        <div class="step-line" id="step-line-4"></div>
+        <div class="step-node" id="step-node-5">
+          <div class="step-num">5</div>
+          <div class="step-label">Analyze Evidence</div>
+        </div>
+        <div class="step-line" id="step-line-5"></div>
+        <div class="step-node" id="step-node-6">
+          <div class="step-num">6</div>
+          <div class="step-label">Generate Review</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Demo Claim Quick Switcher ───────────────────────────────── -->
+    <section class="demo-claims-bar">
+      <span class="demo-bar-label">⚡ Quick Demo Claims:</span>
+      <button type="button" class="demo-btn" id="btn-demo-clm-001">
+        <strong>CLM-001</strong> · Clean Accident (Pass)
+      </button>
+      <button type="button" class="demo-btn" id="btn-demo-clm-002">
+        <strong>CLM-002</strong> · Contradictory (Date & Amount)
+      </button>
+      <button type="button" class="demo-btn" id="btn-demo-clm-003">
+        <strong>CLM-003</strong> · Theft (Missing FIR)
+      </button>
+    </section>
+
+    <!-- ── STEP 1: Submit & Ingest Card ────────────────────────────── -->
+    <section class="card submit-card" id="step-1-card">
       <div class="card-header-row">
-        <h2 class="card-title">Document Ingestion & Fact Extraction</h2>
-        <span class="subtle-badge">PyMuPDF + Gemini</span>
+        <h2 class="card-title">
+          <span class="step-badge">STEP 1</span>
+          Submit Claim Documents
+        </h2>
+        <span class="subtle-badge">PyMuPDF Local Ingestion</span>
       </div>
       <p class="section-desc">
-        Upload a claim document (Claim Form, Repair Estimate, or FIR) to extract structured facts and verify evidence quotes against source pages.
+        Upload motor claim documents (Claim Form, Repair Estimate, or FIR) for automated multi-document fact extraction and evidence provenance verification.
       </p>
 
       <form id="claim-form" class="claim-form" enctype="multipart/form-data">
@@ -50,7 +102,7 @@
             </div>
             <div class="file-action-row">
               <button type="button" class="btn-secondary btn-sm" id="btn-extract-claim-form" disabled>
-                Extract Evidence
+                ⚡ STEP 2: Extract Claim Form
               </button>
             </div>
           </div>
@@ -68,7 +120,7 @@
             </div>
             <div class="file-action-row">
               <button type="button" class="btn-secondary btn-sm" id="btn-extract-repair-estimate" disabled>
-                Extract Evidence
+                ⚡ STEP 2: Extract Second Document
               </button>
             </div>
           </div>
@@ -97,10 +149,10 @@
         </div>
 
         <div class="submit-action-row">
-          <button type="submit" class="btn-primary" id="review-btn">
-            Submit for Full Review
+          <button type="button" class="btn-primary" id="btn-pipeline-start">
+            🚀 Run Full Review Pipeline (Steps 2–6)
           </button>
-          <span class="action-note">Policy review engine enabled in later milestones</span>
+          <span class="action-note">Or execute steps individually below</span>
         </div>
       </form>
 
@@ -108,10 +160,13 @@
       <div id="submit-feedback" class="feedback hidden"></div>
     </section>
 
-    <!-- ── Extraction Results Section (Milestone 3) ────────────────── -->
+    <!-- ── STEP 2: Extraction Results Section ──────────────────────── -->
     <section class="card extraction-results-card hidden" id="extraction-results-card">
       <div class="card-header-row">
-        <h2 class="card-title">Extracted Document Facts</h2>
+        <h2 class="card-title">
+          <span class="step-badge">STEP 2</span>
+          Extracted Document Facts & Quotations
+        </h2>
         <span class="badge badge-success" id="extract-doc-type-badge">claim_form</span>
       </div>
 
@@ -128,39 +183,39 @@
       </div>
 
       <!-- Provenance / Evidence Details -->
-      <h3 class="section-heading" style="margin-top: 24px;">Evidence Provenance</h3>
+      <h3 class="section-heading" style="margin-top: 24px;">Evidence Provenance (Zero Hallucination)</h3>
       <p class="section-subtext">
-        Every fact is verified against the source PDF page to prevent hallucinated citations.
+        Every fact is verified against source PDF text to eliminate hallucinated citations.
       </p>
 
       <div class="evidence-list" id="evidence-list">
         <!-- Dynamically populated -->
       </div>
 
-      <!-- Action: Retrieve Policy & Evaluate Rules & Analyze Evidence -->
+      <!-- Pipeline Navigation Action Row -->
       <div class="retrieval-action-row" style="margin-top: 24px;">
         <button type="button" class="btn-primary" id="btn-retrieve-policy">
-          🔍 Retrieve Relevant Policy
+          🔍 STEP 3: Ground Policy Clauses
         </button>
         <button type="button" class="btn-primary" id="btn-evaluate-rules" style="background-color: #0f766e;">
-          ⚖️ Evaluate Policy Rules
+          ⚖️ STEP 4: Evaluate Policy Rules
         </button>
         <button type="button" class="btn-primary" id="btn-analyze-evidence" style="background-color: #7c2d12;">
-          🔎 Analyze Evidence & Completeness
+          🔎 STEP 5: Analyze Evidence Contradictions
         </button>
-        <span class="action-note">Deterministic multi-document cross-check & evidence verification</span>
-      </div>
-
-      <div class="extraction-disclaimer">
-        <span class="info-icon">ℹ️</span>
-        <span>Fact extraction complete — click above to retrieve grounded policy clauses, evaluate rules, or run cross-document evidence analysis.</span>
+        <button type="button" class="btn-primary" id="btn-generate-review-card" style="background-color: #4338ca;">
+          📋 STEP 6: Generate Final Review
+        </button>
       </div>
     </section>
 
-    <!-- ── Policy Grounding Results Section (Milestone 4) ──────────── -->
+    <!-- ── STEP 3: Policy Grounding Results Section ────────────────── -->
     <section class="card policy-results-card hidden" id="policy-results-card">
       <div class="card-header-row">
-        <h2 class="card-title">Relevant Policy Clauses</h2>
+        <h2 class="card-title">
+          <span class="step-badge">STEP 3</span>
+          Policy Clause Grounding & Semantic Retrieval
+        </h2>
         <span class="subtle-badge">Gemini Embedding + Cosine Similarity</span>
       </div>
 
@@ -177,15 +232,18 @@
         <span class="info-icon">⚖️</span>
         <div>
           <strong>Policy Grounding Note:</strong>
-          <span>Retrieval identifies relevant policy clauses. It does not determine claim eligibility or make approval/rejection decisions.</span>
+          <span>Vector retrieval identifies relevant policy clauses from the 16-clause canonical policy schedule. It grounds subsequent rule evaluations.</span>
         </div>
       </div>
     </section>
 
-    <!-- ── Policy Rules Evaluation Section (Milestone 5) ───────────── -->
+    <!-- ── STEP 4: Policy Rules Evaluation Section ─────────────────── -->
     <section class="card rule-evaluation-card hidden" id="rule-evaluation-card">
       <div class="card-header-row">
-        <h2 class="card-title">Deterministic Policy Rule Findings</h2>
+        <h2 class="card-title">
+          <span class="step-badge">STEP 4</span>
+          Deterministic Policy Rule Evaluations
+        </h2>
         <span class="subtle-badge">100% Deterministic Policy Logic</span>
       </div>
 
@@ -204,15 +262,18 @@
         <span class="info-icon">🛡️</span>
         <div>
           <strong>Deterministic Rule Evaluation Notice:</strong>
-          <span>Rule evaluation checks specific policy conditions and highlights missing evidence or warnings (e.g. late notification). It strictly does not make final claim adjudication decisions (APPROVE / REJECT / DENY).</span>
+          <span>Rule evaluation checks specific policy conditions and highlights missing evidence or warnings. It strictly does not make final claim adjudication decisions (APPROVE / REJECT / DENY).</span>
         </div>
       </div>
     </section>
 
-    <!-- ── Evidence Analysis Section (Milestone 6) ────────────────── -->
+    <!-- ── STEP 5: Evidence Analysis Section ──────────────────────── -->
     <section class="card evidence-analysis-card hidden" id="evidence-analysis-card">
       <div class="card-header-row">
-        <h2 class="card-title">Evidence Contradictions & Completeness</h2>
+        <h2 class="card-title">
+          <span class="step-badge">STEP 5</span>
+          Evidence Contradictions & Completeness
+        </h2>
         <span class="subtle-badge">Deterministic Cross-Document Cross-Check</span>
       </div>
 
@@ -224,11 +285,11 @@
       <!-- Contradictions Section -->
       <div class="analysis-sub-section">
         <h3 class="section-heading" style="display: flex; align-items: center; justify-content: space-between;">
-          <span>1. Evidence Contradictions & Discrepancies</span>
+          <span>1. Cross-Document Contradictions & Discrepancies</span>
           <span class="subtle-count" id="contradictions-count-badge">0 detected</span>
         </h3>
         <p class="section-subtext">
-          Deterministic cross-document fact comparison. Both conflicting values and supporting citations are preserved for investigator review.
+          Deterministic pairwise fact comparison. Conflicting values and exact quotations from each document are preserved.
         </p>
         <div class="contradictions-list" id="contradictions-list">
           <!-- Dynamically populated -->
@@ -238,11 +299,11 @@
       <!-- Completeness Section -->
       <div class="analysis-sub-section" style="margin-top: 28px;">
         <h3 class="section-heading" style="display: flex; align-items: center; justify-content: space-between;">
-          <span>2. Required Policy Document Completeness</span>
+          <span>2. Policy Document Completeness</span>
           <span class="subtle-count" id="completeness-count-badge">0 requirements</span>
         </h3>
         <p class="section-subtext">
-          Evaluation of document completeness against policy rules (Clause 7.1 for Accident claims, Clause 7.2 & 3.2 for Theft claims).
+          Grounded against Clause 7.1 (Accident) and Clause 7.2 & 3.2 (Theft).
         </p>
         <div class="completeness-list" id="completeness-list">
           <!-- Dynamically populated -->
@@ -260,21 +321,118 @@
         </div>
       </div>
 
-      <!-- Non-adjudication disclaimer -->
       <div class="evidence-disclaimer">
         <span class="info-icon">🛡️</span>
         <div>
           <strong>Evidence Analysis Notice:</strong>
-          <span>This engine identifies factual discrepancies and document completeness gaps across submitted evidence. It strictly does not make final claim adjudication decisions (APPROVE / REJECT / DENY / FRAUD) and never chooses which document is truthful.</span>
+          <span>This engine identifies factual discrepancies and document completeness gaps across submitted evidence. It strictly does not make final claim adjudication decisions (APPROVE / REJECT / DENY / FRAUD).</span>
         </div>
       </div>
     </section>
 
-    <!-- ── Review Preview ────────────────────────────────────────── -->
+    <!-- ── STEP 6: Final Review & Audit Report Section ────────────── -->
+    <section class="card final-review-card hidden" id="final-review-card">
+      <div class="card-header-row">
+        <h2 class="card-title">
+          <span class="step-badge step-badge-final">STEP 6</span>
+          Final Claims Evidence Audit Report
+        </h2>
+        <span class="subtle-badge">Milestone 7 · Judge-Ready Synthesis</span>
+      </div>
+
+      <!-- Review Status Main Banner -->
+      <div class="review-status-container" id="review-status-container">
+        <div class="review-status-header">
+          <span class="review-status-label">RECOMMENDED REVIEW STATUS</span>
+          <span class="review-status-timestamp" id="report-timestamp">Generated: Just now</span>
+        </div>
+        <div class="review-status-badge-lg" id="review-status-badge">
+          READY_FOR_REVIEW
+        </div>
+        <div class="review-status-reason" id="review-status-reason">
+          Evidence package is complete, internally consistent, and satisfies preliminary policy criteria.
+        </div>
+      </div>
+
+      <!-- Claim Summary Grid -->
+      <div class="report-section-box">
+        <h3 class="section-heading">Claim Review Summary</h3>
+        <div class="facts-grid" id="report-summary-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- WHY? Triggering Findings -->
+      <div class="report-section-box" style="border-left: 4px solid #4f46e5;">
+        <h3 class="section-heading" style="color: #4338ca;">
+          <span>⚡ WHY THIS STATUS? (Triggering Findings)</span>
+        </h3>
+        <p class="section-subtext">
+          The 1–3 most critical factors that deterministically drove the review recommendation.
+        </p>
+        <div class="triggering-findings-list" id="triggering-findings-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Policy Findings Metric Breakdown -->
+      <div class="report-section-box">
+        <h3 class="section-heading">Policy Rules Findings Summary</h3>
+        <div class="report-policy-metrics" id="report-policy-metrics">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Evidence Issues Breakdown -->
+      <div class="report-section-box">
+        <h3 class="section-heading">Evidence Issues & Gaps</h3>
+        <div id="report-evidence-issues">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Policy References -->
+      <div class="report-section-box">
+        <h3 class="section-heading">Applicable Policy Clauses</h3>
+        <div class="report-clauses-list" id="report-clauses-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Evidence Provenance Citations -->
+      <div class="report-section-box">
+        <h3 class="section-heading">Evidence Provenance & Direct Quotations</h3>
+        <div class="report-evidence-list" id="report-evidence-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Recommended Reviewer Action Box -->
+      <div class="reviewer-action-box" id="reviewer-action-box">
+        <div class="action-box-title">👤 RECOMMENDED REVIEW ACTION (For Claims Investigator)</div>
+        <div class="action-box-text" id="report-action-text">
+          Evidence package is sufficiently complete and internally consistent for standard human review.
+        </div>
+      </div>
+
+      <!-- Mandatory Legal Disclaimer -->
+      <div class="final-legal-disclaimer">
+        <span class="info-icon">⚖️</span>
+        <div>
+          <strong>Auditable Non-Adjudication Disclaimer:</strong>
+          <p id="report-disclaimer-text">
+            ClaimLens provides evidence review assistance and does not make final insurance claim decisions.
+            All findings, policy evaluations, and recommendations are structured for human claims investigator review.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Review Pipeline Status Preview ──────────────────────────── -->
     <section class="card preview-card">
       <h2 class="card-title">
-        Review Pipeline Status
-        <span class="proto-badge">Prototype Preview</span>
+        Review Pipeline Status Tracker
+        <span class="proto-badge">Live Status</span>
       </h2>
 
       <!-- Document Status -->
@@ -298,20 +456,20 @@
 
       <!-- Consistency -->
       <div class="preview-section">
-        <h3 class="section-heading">Consistency & Contradictions</h3>
-        <p class="muted" id="consistency-status">Awaiting multi-document cross-check (Milestone 6)</p>
+        <h3 class="section-heading">Consistency & Contradictions (Step 5)</h3>
+        <p class="muted" id="consistency-status">Awaiting multi-document cross-check</p>
       </div>
 
       <!-- Policy Analysis -->
       <div class="preview-section">
-        <h3 class="section-heading">Policy Rules Analysis</h3>
-        <p class="muted" id="policy-status">Awaiting deterministic policy evaluation (Milestones 4-5)</p>
+        <h3 class="section-heading">Policy Rules Analysis (Step 4)</h3>
+        <p class="muted" id="policy-status">Awaiting deterministic policy evaluation</p>
       </div>
 
       <!-- Recommendation -->
       <div class="preview-section">
-        <h3 class="section-heading">Final Recommendation</h3>
-        <p class="muted" id="recommendation-status">Awaiting structured evidence review (Milestone 7)</p>
+        <h3 class="section-heading">Final Review Recommendation (Step 6)</h3>
+        <p class="muted" id="recommendation-status">Awaiting structured evidence review generation</p>
       </div>
     </section>
 
@@ -319,7 +477,7 @@
 
   <!-- ── Footer ────────────────────────────────────────────────────── -->
   <footer class="footer">
-    <p>ClaimLens v0.1 · Milestone 6 · Evidence first. Decisions second.</p>
+    <p>ClaimLens v0.1 · PS02 Final Milestone · Evidence First. Decisions Second.</p>
   </footer>
 
   <script src="/static/app.js"></script>

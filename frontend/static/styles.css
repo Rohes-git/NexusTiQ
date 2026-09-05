@@ -1194,6 +1194,349 @@ input[type="text"]:focus {
   line-height: 1.4;
 }
 
+/* ── Workflow Stepper ──────────────────────────────────────────── */
+.workflow-stepper-card {
+  background: #ffffff;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stepper-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.step-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.step-node.active .step-num {
+  background: var(--clr-primary);
+  border-color: var(--clr-primary);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.15);
+}
+
+.step-node.active .step-label {
+  color: var(--clr-primary);
+  font-weight: 700;
+}
+
+.step-node.completed .step-num {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.step-node.completed .step-label {
+  color: #059669;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 8px 18px 8px;
+  z-index: 1;
+}
+
+.step-line.completed {
+  background: #059669;
+}
+
+/* ── Demo Claims Quick Switcher ────────────────────────────────── */
+.demo-claims-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.demo-bar-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.demo-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  color: #1e293b;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s ease;
+}
+
+.demo-btn:hover {
+  background: #eff6ff;
+  border-color: var(--clr-primary);
+  color: var(--clr-primary);
+}
+
+.demo-btn.active {
+  background: #dbeafe;
+  border-color: var(--clr-primary);
+  color: var(--clr-primary);
+  font-weight: 700;
+}
+
+/* ── Step Badges ───────────────────────────────────────────────── */
+.step-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.step-badge-final {
+  background: #4338ca;
+  color: #ffffff;
+}
+
+/* ── Final Review & Audit Report Card (Step 6) ─────────────────── */
+.final-review-card {
+  border-top: 4px solid #4338ca;
+  background: #ffffff;
+}
+
+.review-status-container {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.review-status-container.status-ready_for_review {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.review-status-container.status-request_information {
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+
+.review-status-container.status-escalate_for_human_review {
+  background: #faf5ff;
+  border-color: #8b5cf6;
+}
+
+.review-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.review-status-badge-lg {
+  display: inline-block;
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  padding: 8px 24px;
+  border-radius: 8px;
+  margin: 6px 0 12px 0;
+}
+
+.status-ready_for_review .review-status-badge-lg {
+  background: #059669;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+.status-request_information .review-status-badge-lg {
+  background: #d97706;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+}
+
+.status-escalate_for_human_review .review-status-badge-lg {
+  background: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.review-status-reason {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.45;
+}
+
+.report-section-box {
+  background: #fafafa;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.triggering-findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.triggering-finding-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #4f46e5;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.triggering-finding-item.missing {
+  border-left-color: #dc2626;
+  background: #fef2f2;
+}
+
+.triggering-finding-item.contradiction {
+  border-left-color: #ea580c;
+  background: #fff7ed;
+}
+
+.triggering-finding-item.policy_failure {
+  border-left-color: #7c3aed;
+  background: #faf5ff;
+}
+
+.trigger-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #0f172a;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trigger-detail {
+  font-size: 0.84rem;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.report-policy-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.report-clauses-list,
+.report-evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.report-clause-mini-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+}
+
+.report-clause-mini-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.reviewer-action-box {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 24px;
+}
+
+.action-box-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #166534;
+  margin-bottom: 6px;
+}
+
+.action-box-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #065f46;
+  line-height: 1.4;
+}
+
+.final-legal-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 14px 18px;
+  font-size: 0.82rem;
+  color: #475569;
+  margin-top: 20px;
+  line-height: 1.45;
+}
+
 /* ── Footer ────────────────────────────────────────────────────── */
 .footer {
   text-align: center;
