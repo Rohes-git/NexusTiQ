@@ -16,7 +16,7 @@
         <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant</p>
       </div>
       <div class="header-right">
-        <span class="pipeline-tag">Milestone 3 · Fact Extraction</span>
+        <span class="pipeline-tag">Milestone 4 · Policy Grounding</span>
         <span class="track-badge">PS02</span>
       </div>
     </div>
@@ -137,9 +137,42 @@
         <!-- Dynamically populated -->
       </div>
 
+      <!-- Action: Retrieve Policy -->
+      <div class="retrieval-action-row" style="margin-top: 24px;">
+        <button type="button" class="btn-primary" id="btn-retrieve-policy">
+          🔍 Retrieve Relevant Policy
+        </button>
+        <span class="action-note">Grounds extracted facts against the 16-clause policy via vector retrieval</span>
+      </div>
+
       <div class="extraction-disclaimer">
         <span class="info-icon">ℹ️</span>
-        <span>Fact extraction complete — policy rules and coverage evaluation will be performed in subsequent milestones.</span>
+        <span>Fact extraction complete — click above to retrieve grounded policy clauses or submit for pipeline tracking.</span>
+      </div>
+    </section>
+
+    <!-- ── Policy Grounding Results Section (Milestone 4) ──────────── -->
+    <section class="card policy-results-card hidden" id="policy-results-card">
+      <div class="card-header-row">
+        <h2 class="card-title">Relevant Policy Clauses</h2>
+        <span class="subtle-badge">Gemini Embedding + Cosine Similarity</span>
+      </div>
+
+      <div class="policy-query-banner">
+        <span class="query-label">Semantic Query:</span>
+        <span class="query-text" id="policy-query-text">-</span>
+      </div>
+
+      <div class="grounded-clauses-list" id="grounded-clauses-list">
+        <!-- Dynamically populated -->
+      </div>
+
+      <div class="policy-disclaimer">
+        <span class="info-icon">⚖️</span>
+        <div>
+          <strong>Policy Grounding Note:</strong>
+          <span>Retrieval identifies relevant policy clauses. It does not determine claim eligibility or make approval/rejection decisions.</span>
+        </div>
       </div>
     </section>
 
@@ -192,7 +225,7 @@
 
   <!-- ── Footer ────────────────────────────────────────────────────── -->
   <footer class="footer">
-    <p>ClaimLens v0.1 · Milestone 3 · Evidence first. Decisions second.</p>
+    <p>ClaimLens v0.1 · Milestone 4 · Evidence first. Decisions second.</p>
   </footer>
 
   <script src="/static/app.js"></script>

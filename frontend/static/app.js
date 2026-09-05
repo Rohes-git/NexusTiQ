@@ -21,6 +21,7 @@
 
   const btnExtractClaimForm = document.getElementById("btn-extract-claim-form");
   const btnExtractRepair = document.getElementById("btn-extract-repair-estimate");
+  const btnRetrievePolicy = document.getElementById("btn-retrieve-policy");
 
   const extractionCard = document.getElementById("extraction-results-card");
   const extractDocTypeBadge = document.getElementById("extract-doc-type-badge");
@@ -29,9 +30,16 @@
   const summaryGrid = document.getElementById("summary-grid");
   const evidenceList = document.getElementById("evidence-list");
 
+  const policyResultsCard = document.getElementById("policy-results-card");
+  const policyQueryText = document.getElementById("policy-query-text");
+  const groundedClausesList = document.getElementById("grounded-clauses-list");
+
   const statusClaimForm = document.getElementById("status-claim-form");
   const statusRepairEstimate = document.getElementById("status-repair-estimate");
   const statusDescription = document.getElementById("status-description");
+  const policyStatus = document.getElementById("policy-status");
+
+  var currentExtractedFacts = [];
 
   // ── File-name and Button State Binding ──────────────────────────
   function bindFileInput(input, nameEl, btnEl) {
@@ -141,6 +149,7 @@
 
   // ── Render Structured Facts & Evidence ──────────────────────────
   function renderExtractionResults(data) {
+    currentExtractedFacts = data.facts || [];
     metaFilename.textContent = data.document.filename;
     metaPages.textContent = data.document.page_count;
 
@@ -199,6 +208,137 @@
       pagePill.className = "page-pill";
       pagePill.textContent = "Page " + fact.page_number;
       pills.appendChild(pagePill);
+
+      var confPill = document.createElement("span");
+      confPill.className = "conf-pill";
+      confPill.textContent = Math.round(fact.confidence * 100) + "% confidence";
+      pills.appendChild(confPill);
+
+      var validBadge = document.createElement("span");
+      validBadge.className = "badge " + (fact.evidence_valid ? "badge-success" : "badge-error");
+      validBadge.textContent = fact.evidence_valid ? "✓ Verified in source" : "✗ Unverified quote";
+      pills.appendChild(validBadge);
+
+      header.appendChild(title);
+      header.appendChild(pills);
+
+      var quoteBox = document.createElement("div");
+      quoteBox.className = "quote-box";
+      quoteBox.textContent = fact.evidence_text || "(No evidence quote provided)";
+
+      item.appendChild(header);
+      item.appendChild(quoteBox);
+      evidenceList.appendChild(item);
+    });
+
+    extractionCard.classList.remove("hidden");
+    extractionCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // ── Policy Retrieval (Milestone 4) ──────────────────────────────
+  if (btnRetrievePolicy) {
+    btnRetrievePolicy.addEventListener("click", async function () {
+      if (!currentExtractedFacts || currentExtractedFacts.length === 0) {
+        showFeedback("error", "Please extract facts from a document first before retrieving policy clauses.");
+        return;
+      }
+
+      btnRetrievePolicy.disabled = true;
+      var originalText = btnRetrievePolicy.textContent;
+      btnRetrievePolicy.textContent = "Retrieving Policy…";
+      feedback.classList.add("hidden");
+
+      try {
+        var response = await fetch("/api/retrieve-policy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ facts: currentExtractedFacts, top_k: 5 }),
+        });
+
+        var data = await response.json();
+
+        if (!data.success) {
+          showFeedback("error", data.error || "Failed to retrieve relevant policy clauses.");
+          policyResultsCard.classList.add("hidden");
+        } else {
+          renderPolicyResults(data);
+        }
+      } catch (err) {
+        showFeedback("error", "Error connecting to policy retrieval service: " + err.message);
+        policyResultsCard.classList.add("hidden");
+      } finally {
+        btnRetrievePolicy.disabled = false;
+        btnRetrievePolicy.textContent = originalText;
+      }
+    });
+  }
+
+  function renderPolicyResults(data) {
+    policyQueryText.textContent = data.query || "(No query text)";
+    groundedClausesList.innerHTML = "";
+
+    (data.clauses || []).forEach(function (clause) {
+      var card = document.createElement("div");
+      card.className = "grounded-clause-card";
+
+      // Header row
+      var header = document.createElement("div");
+      header.className = "clause-header-row";
+
+      var leftMeta = document.createElement("div");
+      leftMeta.style.display = "flex";
+      leftMeta.style.alignItems = "center";
+
+      var idBadge = document.createElement("span");
+      idBadge.className = "clause-id-badge";
+      idBadge.textContent = "Clause " + clause.clause_id;
+
+      var secSpan = document.createElement("span");
+      secSpan.className = "clause-section";
+      secSpan.textContent = clause.section;
+
+      leftMeta.appendChild(idBadge);
+      leftMeta.appendChild(secSpan);
+
+      var relevancePill = document.createElement("span");
+      relevancePill.className = "relevance-pill";
+      var pct = Math.round(clause.similarity_score * 100);
+      relevancePill.textContent = pct + "% Relevance";
+
+      header.appendChild(leftMeta);
+      header.appendChild(relevancePill);
+
+      // Title
+      var title = document.createElement("div");
+      title.className = "clause-title-text";
+      title.textContent = clause.title;
+
+      // Policy Text
+      var quoteBox = document.createElement("div");
+      quoteBox.className = "policy-quote-box";
+      quoteBox.textContent = clause.text;
+
+      // Reason Box
+      var reasonBox = document.createElement("div");
+      reasonBox.className = "grounding-reason-box";
+      reasonBox.innerHTML = "<strong>Factual Rationale:</strong>&nbsp;" + clause.reason;
+
+      card.appendChild(header);
+      card.appendChild(title);
+      card.appendChild(quoteBox);
+      card.appendChild(reasonBox);
+
+      groundedClausesList.appendChild(card);
+    });
+
+    policyResultsCard.classList.remove("hidden");
+    policyResultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (policyStatus) {
+      policyStatus.textContent = (data.clauses ? data.clauses.length : 0) + " policy clauses grounded via vector retrieval";
+      policyStatus.className = "text-success font-medium";
+    }
+  }
 
       var confPill = document.createElement("span");
       confPill.className = "conf-pill";

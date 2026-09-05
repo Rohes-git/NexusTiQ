@@ -137,6 +137,13 @@ class ExtractionResponse(BaseModel):
     error: Optional[ExtractionError] = None
 
 
+class PolicyRetrievalRequest(BaseModel):
+    """Request payload for /api/retrieve-policy."""
+    facts: Optional[list[ExtractedFact]] = None
+    claim_facts: Optional[dict[str, Any]] = None
+    top_k: int = Field(5, ge=1, le=16, description="Number of relevant clauses to retrieve")
+
+
 # ── Domain models ─────────────────────────────────────────────────────────
 
 class Evidence(BaseModel):

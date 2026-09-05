@@ -1,29 +1,17 @@
-"""Embedding service for semantic search over policy documents.
+"""Embedding service entry point for backward compatibility."""
 
-Will provide vector embeddings for policy clause retrieval.
-NOT implemented in Milestone 1.
-"""
+from src.retrieval.embedding_service import (
+    EmbeddingService,
+    MockEmbeddingService,
+    EmbeddingServiceError,
+    GeminiNotConfiguredError,
+    GeminiEmbeddingAPIError,
+)
 
-
-class EmbeddingService:
-    """Generates embeddings for policy text and claim facts."""
-
-    def embed_text(self, text: str) -> list[float]:
-        """Generate an embedding vector for the given text.
-
-        Raises:
-            NotImplementedError: Always, until Milestone 4.
-        """
-        raise NotImplementedError(
-            "Embedding service will be implemented in Milestone 4."
-        )
-
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Generate embeddings for multiple texts.
-
-        Raises:
-            NotImplementedError: Always, until Milestone 4.
-        """
-        raise NotImplementedError(
-            "Batch embedding will be implemented in Milestone 4."
-        )
+__all__ = [
+    "EmbeddingService",
+    "MockEmbeddingService",
+    "EmbeddingServiceError",
+    "GeminiNotConfiguredError",
+    "GeminiEmbeddingAPIError",
+]

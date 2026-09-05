@@ -29,6 +29,15 @@ from src.models import (
     DocumentSummary,
     ExtractionResponse,
     ExtractionError,
+    PolicyRetrievalRequest,
+)
+from src.retrieval.policy_retriever import (
+    PolicyRetriever,
+    PolicyRetrieverError,
+)
+from src.retrieval.grounding import (
+    PolicyRetrievalResponse,
+    GroundedClause,
 )
 
 logger = logging.getLogger("claimlens")
@@ -171,6 +180,38 @@ async def extract_document(file: UploadFile = File(...)):
                 code="EXTRACTION_FAILED",
                 message="An error occurred while extracting facts from the document.",
             ),
+        )
+
+
+@app.post("/api/retrieve-policy", response_model=PolicyRetrievalResponse)
+async def retrieve_policy(request: PolicyRetrievalRequest):
+    """Retrieve and ground relevant policy clauses for extracted claim facts."""
+    facts = request.facts if request.facts is not None else request.claim_facts
+    if facts is None or (isinstance(facts, list) and len(facts) == 0) or (isinstance(facts, dict) and len(facts) == 0):
+        return PolicyRetrievalResponse(
+            success=False,
+            error="No claim facts provided in request. Please extract or provide facts first.",
+        )
+
+    try:
+        retriever = PolicyRetriever()
+        query, grounded = retriever.retrieve_relevant_clauses(facts, top_k=request.top_k)
+        return PolicyRetrievalResponse(
+            success=True,
+            query=query,
+            clauses=grounded,
+        )
+    except PolicyRetrieverError as e:
+        logger.error(f"Policy retriever error: {e.message}")
+        return PolicyRetrievalResponse(
+            success=False,
+            error=f"Retrieval failed ({e.code}): {e.message}",
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error during policy retrieval: {e}")
+        return PolicyRetrievalResponse(
+            success=False,
+            error="An unexpected error occurred during policy clause retrieval.",
         )
 
 

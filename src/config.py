@@ -12,6 +12,7 @@ from dataclasses import dataclass
 class Settings:
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"
+    gemini_embedding_model: str = "text-embedding-004"
     app_name: str = "ClaimLens"
     app_version: str = "0.1.0"
     max_upload_size_bytes: int = 10 * 1024 * 1024  # 10 MB
@@ -25,6 +26,7 @@ def _load_settings() -> Settings:
     return Settings(
         gemini_api_key=os.environ.get("GEMINI_API_KEY", "").strip(),
         gemini_model=os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip(),
+        gemini_embedding_model=os.environ.get("GEMINI_EMBEDDING_MODEL", "text-embedding-004").strip(),
     )
 
 

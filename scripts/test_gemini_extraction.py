@@ -5,12 +5,8 @@ If GEMINI_API_KEY is not set, prints an informative message and exits cleanly.
 """
 
 import sys
-import io
 import os
 from pathlib import Path
-
-# Ensure utf-8 output on Windows consoles
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
@@ -83,4 +79,6 @@ def run_gemini_extraction_test():
 
 
 if __name__ == "__main__":
+    if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.exit(run_gemini_extraction_test())

@@ -152,14 +152,6 @@ def test_placeholders_raise_not_implemented():
     with pytest.raises(NotImplementedError):
         extractor.extract_claim_facts(Document())
 
-    embedder = EmbeddingService()
-    with pytest.raises(NotImplementedError):
-        embedder.embed_text("test")
-
-    retriever = PolicyRetriever()
-    with pytest.raises(NotImplementedError):
-        retriever.retrieve_clauses(ClaimFacts())
-
     with pytest.raises(NotImplementedError):
         evaluate_coverage(ClaimFacts(), [])
 

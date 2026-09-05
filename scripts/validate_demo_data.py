@@ -13,13 +13,9 @@ Verifies:
 """
 
 import sys
-import io
 import json
 from pathlib import Path
 import pymupdf
-
-# Ensure utf-8 output on Windows consoles
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 POLICY_DIR = BASE_DIR / "data" / "policy"
@@ -190,5 +186,7 @@ def validate():
 
 
 if __name__ == "__main__":
+    if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     success = validate()
     sys.exit(0 if success else 1)

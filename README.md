@@ -12,15 +12,16 @@ ClaimLens is an evidence-first review assistant for motor insurance claims invol
 
 ## Current Milestone
 
-**Milestone 3 — Document Ingestion and Fact Extraction**
+**Milestone 4 — Policy Retrieval and Clause Grounding**
 
-This milestone implements the core document processing OCR and fact extraction pipeline:
+This milestone implements semantic policy clause retrieval and factual clause grounding:
 
-- **Page-Aware PDF Ingestion**: Extracts text from PDFs page-by-page using `PyMuPDF`, maintaining structural delimiters (`--- PAGE X ---`) to guarantee precise provenance tracking.
-- **Structured Fact Extraction**: Leverages the official `google-genai` SDK to extract domain-specific entities (amounts, dates, vehicle details) using Pydantic `GeminiExtractionSchema` and deterministic temperature `0.0`.
-- **Python-Side Evidence Verification**: Prevents AI hallucination through deterministic validation (`verify_evidence_in_page`) that ensures requested `evidence_text` quotes actually appear in the source page text.
-- **Deterministic Normalization**: Standardizes currency amounts (e.g., `"Rs. 72,000/-"` → `72000`) and date formats (e.g., `"20 August 2026"` → `"2026-08-20"`) without losing the raw extracted values or context.
-- **Robust Endpoint API**: Extends `GET /api/health` and implements `POST /api/extract-document` with local fallbacks, mock testing offline fixtures (`tests/fixtures/`), and frontend evidence component visualization (`index.html`).
+- **Policy Clause Indexing**: Loads the 16-clause synthetic motor policy, preserving clause IDs (e.g., `2.1`, `3.2`), section names, titles, and exact clause text, while computing a canonical SHA-256 hash for cache invalidation.
+- **Gemini Embeddings & Local Caching**: Uses `google-genai` embedding API (`text-embedding-004`) to generate dense vector embeddings, cached locally at `data/policy/policy_embeddings.json` with hash and model validity checks.
+- **Factual Semantic Query Construction**: Converts extracted claim facts (incident type, vehicle details, dates, financial amounts) into targeted search queries without fabricating facts or making premature coverage conclusions.
+- **Local Vector Search**: Lightweight NumPy-based cosine similarity index ranking relevant clauses deterministically.
+- **Clause Grounding Layer**: Attaches deterministic, factual relevance rationale to each retrieved clause (strictly avoiding approval/rejection or fraud determinations).
+- **Interactive UI & API**: Exposes `POST /api/retrieve-policy` and adds interactive policy grounding cards with relevance percentages and exact policy quotes in the frontend.
 
 ---
 
@@ -48,8 +49,12 @@ src/
   extraction/
     gemini_extractor.py                     # Document extraction (Milestone 3)
   retrieval/
-    embeddings.py                           # Embedding service (Milestone 4)
-    policy_retriever.py                     # Policy clause retrieval (Milestone 4)
+    policy_retriever.py                     # Policy retrieve orchestration
+    policy_loader.py                        # Load canonical policy JSON
+    embedding_service.py                    # Gemini embeddings generator
+    vector_index.py                         # Local NumPy-based vector index
+    query_builder.py                        # Semantic search query constructor
+    grounding.py                            # Factual clause grounding
   rules/
     coverage.py                             # Coverage evaluation (Milestone 5)
     documents.py                            # Document completeness (Milestone 5)
@@ -81,6 +86,9 @@ data/
 scripts/
   generate_demo_pdfs.py                     # PDF generator script using ReportLab
   validate_demo_data.py                     # Validation script using PyMuPDF
+  test_gemini_extraction.py                 # Extractor integration test
+  build_policy_embeddings.py                # Create/cache embeddings locally
+  test_policy_retrieval.py                  # Retriever integration test
 
 frontend/
   index.html                                # ClaimLens UI
@@ -108,6 +116,8 @@ tests/                                      # Pytest test suite
 - `python-multipart`
 - `reportlab`
 - `pymupdf`
+- `google-genai`
+- `numpy`
 
 ---
 
@@ -149,6 +159,25 @@ python -m pytest tests/ -v
 |---|---|---|
 | `GEMINI_API_KEY` | Optional for running/testing offline (Required for live Gemini extraction) | Google Gemini API key. If unset, unit tests run against offline fixtures and the API gracefully reports `GEMINI_UNAVAILABLE`. |
 | `GEMINI_MODEL` | No (Default: `gemini-2.0-flash`) | Gemini model identifier used for extraction. |
+| `GEMINI_EMBEDDING_MODEL` | No (Default: `text-embedding-004`) | Gemini embedding model used for vector retrieval. |
+
+---
+
+## Building Policy Embeddings
+
+Live semantic retrieval requires vector embeddings of the policy clauses. You only need to build this index once (or when the policy changes).
+
+If `GEMINI_API_KEY` is exported, run:
+
+```bash
+python scripts/build_policy_embeddings.py
+```
+
+This will cache a NumPy-compatible JSON index at `data/policy/policy_embeddings.json`. Unit tests use deterministic mock embeddings and do not require this. To test live integration against demo claims safely:
+
+```bash
+python scripts/test_policy_retrieval.py
+```
 
 ---
 
@@ -158,9 +187,9 @@ python -m pytest tests/ -v
 |---|---|---|
 | **1** | Application foundation | Done |
 | **2** | Policy and demo data | Done |
-| **3** | Document extraction (Gemini) | Done (Current) |
-| **4** | Evidence retrieval (embeddings + policy search) | Next |
-| **5** | Deterministic policy rules | Pending |
+| **3** | Document extraction (Gemini) | Done |
+| **4** | Evidence retrieval (embeddings + policy search) | Done (Current) |
+| **5** | Deterministic policy rules | Next |
 | **6** | Contradiction detection | Pending |
 | **7** | Review generation (Gemini report) | Pending |
 | **8** | Difficult-case testing | Pending |
