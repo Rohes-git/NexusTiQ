@@ -1,0 +1,74 @@
+{
+  "manifest_version": "1.0",
+  "description": "Ground truth test manifest for ClaimLens demo claim dataset",
+  "synthetic": true,
+  "cases": [
+    {
+      "claim_id": "CLM-001",
+      "scenario": "clean_accident",
+      "claim_type": "accident",
+      "directory": "data/demo_claims/claim_001_clean_accident",
+      "expected_recommendation": "APPROVE",
+      "expected_escalation": false,
+      "expected_missing_documents": [],
+      "expected_contradictions": [],
+      "expected_policy_clauses": [
+        "1.1",
+        "1.2",
+        "2.1",
+        "2.2",
+        "6.1",
+        "7.1"
+      ],
+      "evaluation_state": "SUPPORTED"
+    },
+    {
+      "claim_id": "CLM-002",
+      "scenario": "contradictory_accident",
+      "claim_type": "accident",
+      "directory": "data/demo_claims/claim_002_contradiction",
+      "expected_recommendation": "REQUEST_INFORMATION",
+      "expected_escalation": false,
+      "expected_missing_documents": [],
+      "expected_contradictions": [
+        "incident_date",
+        "claimed_amount_vs_repair_estimate"
+      ],
+      "expected_missing_information": [
+        "Clarification/correction of incident date",
+        "Clarification of claimed amount versus repair estimate"
+      ],
+      "expected_policy_clauses": [
+        "1.1",
+        "2.1",
+        "2.2",
+        "6.1",
+        "7.1",
+        "7.3"
+      ],
+      "evaluation_state": "CONTRADICTORY"
+    },
+    {
+      "claim_id": "CLM-003",
+      "scenario": "theft_missing_fir",
+      "claim_type": "theft",
+      "directory": "data/demo_claims/claim_003_missing_fir",
+      "expected_recommendation": "REQUEST_INFORMATION",
+      "expected_escalation": false,
+      "expected_missing_documents": [
+        "FIR"
+      ],
+      "expected_contradictions": [],
+      "expected_policy_clauses": [
+        "1.1",
+        "1.2",
+        "3.1",
+        "3.2",
+        "5.1",
+        "6.1",
+        "7.2"
+      ],
+      "evaluation_state": "INCOMPLETE"
+    }
+  ]
+}

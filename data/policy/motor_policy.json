@@ -1,0 +1,153 @@
+{
+  "policy_id": "CMS-DEMO-001",
+  "policy_name": "ClaimLens Motor Secure Policy",
+  "synthetic": true,
+  "disclaimer": "SYNTHETIC DEMONSTRATION DOCUMENT — NOT A REAL INSURANCE POLICY",
+  "version": "1.0",
+  "effective_date": "2026-01-01",
+  "expiry_date": "2026-12-31",
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Policy Period & Scope"
+    },
+    {
+      "section_number": 2,
+      "section_title": "Accidental Damage"
+    },
+    {
+      "section_number": 3,
+      "section_title": "Theft"
+    },
+    {
+      "section_number": 4,
+      "section_title": "Exclusions"
+    },
+    {
+      "section_number": 5,
+      "section_title": "Insured Declared Value (IDV)"
+    },
+    {
+      "section_number": 6,
+      "section_title": "Claim Notification"
+    },
+    {
+      "section_number": 7,
+      "section_title": "Required Documents & Evidence Quality"
+    }
+  ],
+  "clauses": [
+    {
+      "clause_id": "1.1",
+      "section": "SECTION 1 — POLICY PERIOD",
+      "title": "Coverage Period",
+      "text": "Coverage applies only to incidents occurring between the policy start date and policy end date as specified in the policy schedule.",
+      "tags": ["policy_period", "coverage", "validity"]
+    },
+    {
+      "clause_id": "1.2",
+      "section": "SECTION 1 — POLICY PERIOD",
+      "title": "Covered Vehicles",
+      "text": "Coverage applies exclusively to the motor vehicle identified by registration number and vehicle details in the policy schedule.",
+      "tags": ["vehicle_identification", "coverage", "eligibility"]
+    },
+    {
+      "clause_id": "2.1",
+      "section": "SECTION 2 — ACCIDENTAL DAMAGE",
+      "title": "Accidental Damage Coverage",
+      "text": "Physical damage caused by accidental collision, impact, overturning, or similar accidental external events is covered subject to the terms, conditions, and deductibles of this policy.",
+      "tags": ["accidental_damage", "collision", "coverage"]
+    },
+    {
+      "clause_id": "2.2",
+      "section": "SECTION 2 — ACCIDENTAL DAMAGE",
+      "title": "Repair Settlement",
+      "text": "For covered accidental damage repair claims, the insurer may consider the reasonable repair cost supported by a valid, itemized repair estimate from an authorized garage or repair facility.",
+      "tags": ["repair_settlement", "repair_estimate", "assessment"]
+    },
+    {
+      "clause_id": "3.1",
+      "section": "SECTION 3 — THEFT",
+      "title": "Theft Coverage",
+      "text": "The total theft or loss of the insured vehicle due to burglary, housebreaking, or theft is covered subject to the conditions and verification procedures of this policy.",
+      "tags": ["theft", "total_loss", "coverage"]
+    },
+    {
+      "clause_id": "3.2",
+      "section": "SECTION 3 — THEFT",
+      "title": "Theft Evidence & FIR Requirement",
+      "text": "A theft claim must include a certified copy of the First Information Report (FIR) lodged with the relevant law enforcement authority promptly following discovery of the theft.",
+      "tags": ["theft", "fir", "mandatory_document", "evidence"]
+    },
+    {
+      "clause_id": "4.1",
+      "section": "SECTION 4 — EXCLUSIONS",
+      "title": "Deliberate Damage",
+      "text": "Any loss or physical damage caused deliberately, willfully, or with fraudulent intent by the insured person, vehicle custodian, or with their active connivance is strictly excluded from coverage.",
+      "tags": ["exclusions", "deliberate_damage", "fraud"]
+    },
+    {
+      "clause_id": "4.2",
+      "section": "SECTION 4 — EXCLUSIONS",
+      "title": "Excluded Use",
+      "text": "Loss or damage arising while the vehicle is being used for an explicitly excluded purpose, including commercial hire without endorsement, organized racing, pace-making, or speed testing, is not covered.",
+      "tags": ["exclusions", "commercial_use", "racing"]
+    },
+    {
+      "clause_id": "4.3",
+      "section": "SECTION 4 — EXCLUSIONS",
+      "title": "Fraudulent Information",
+      "text": "A materially false statement or forged document intentionally provided in support of a claim may block settlement and requires mandatory investigator escalation and review.",
+      "tags": ["exclusions", "fraud", "false_statement", "escalation"]
+    },
+    {
+      "clause_id": "5.1",
+      "section": "SECTION 5 — IDV",
+      "title": "Insured Declared Value",
+      "text": "The Insured Declared Value (IDV) represents the agreed maximum settlement amount for total loss, constructive total loss, or unrecovered theft claims, less any applicable policy deductible.",
+      "tags": ["idv", "total_loss", "theft_settlement", "maximum_limit"]
+    },
+    {
+      "clause_id": "5.2",
+      "section": "SECTION 5 — IDV",
+      "title": "Repair Claims & IDV",
+      "text": "For ordinary repair claims, the IDV is not automatically the repair settlement amount; the reasonable covered repair cost is evaluated independently subject to policy depreciation schedules and conditions.",
+      "tags": ["repair_claims", "idv", "valuation", "settlement"]
+    },
+    {
+      "clause_id": "6.1",
+      "section": "SECTION 6 — CLAIM NOTIFICATION",
+      "title": "Notification Window",
+      "text": "The insured should notify the insurer of any accidental damage or theft incident within 7 calendar days of the occurrence or discovery of the loss.",
+      "tags": ["notification", "timeline", "compliance"]
+    },
+    {
+      "clause_id": "6.2",
+      "section": "SECTION 6 — CLAIM NOTIFICATION",
+      "title": "Late Notification",
+      "text": "A claim notification received after the standard 7-calendar-day window requires a written explanation and investigator review rather than automatic rejection.",
+      "tags": ["late_notification", "investigation", "review", "flexibility"]
+    },
+    {
+      "clause_id": "7.1",
+      "section": "SECTION 7 — REQUIRED DOCUMENTS",
+      "title": "Accident Claim Documents",
+      "text": "An accidental damage claim requires the submission of: (1) a completed Claim Form, (2) an itemized Repair Estimate, and (3) a detailed Incident Description.",
+      "tags": ["accident_claim", "required_documents", "claim_form", "repair_estimate"]
+    },
+    {
+      "clause_id": "7.2",
+      "section": "SECTION 7 — REQUIRED DOCUMENTS",
+      "title": "Theft Claim Documents",
+      "text": "A theft claim requires the submission of: (1) a completed Claim Form, (2) an official First Information Report (FIR) from law enforcement, and (3) a detailed Incident Description.",
+      "tags": ["theft_claim", "required_documents", "claim_form", "fir"]
+    },
+    {
+      "clause_id": "7.3",
+      "section": "SECTION 7 — REQUIRED DOCUMENTS",
+      "title": "Evidence Quality & Consistency",
+      "text": "Submitted claim documents containing material contradictions regarding incident date, damage particulars, or claimed financial figures must be reviewed and clarified before a final settlement recommendation is made.",
+      "tags": ["evidence_quality", "contradictions", "clarification", "request_information"]
+    }
+  ]
+}

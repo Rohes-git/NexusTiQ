@@ -1,0 +1,31 @@
+{
+  "claim_id": "CLM-003",
+  "claim_type": "theft",
+  "policy_number": "POL-003",
+  "vehicle_registration": "TN03EF9012",
+  "vehicle": "Honda Activa 6G",
+  "incident_date": "25 August 2026",
+  "notification_date": "26 August 2026",
+  "claimed_amount": 72000,
+  "incident_description": "The insured two-wheeler was parked in the designated parking area outside the insured's residence at approximately 9:00 PM. The vehicle was discovered missing at approximately 7:00 AM the following morning. The insured states that the vehicle was not recovered.",
+  "expected_recommendation": "REQUEST_INFORMATION",
+  "expected_escalation": false,
+  "expected_missing_documents": [
+    {
+      "document": "FIR",
+      "policy_clause": "7.2",
+      "reason": "First Information Report is mandatory for theft claims under policy clauses 3.2 and 7.2"
+    }
+  ],
+  "expected_contradictions": [],
+  "expected_policy_clauses": [
+    "1.1",
+    "1.2",
+    "3.1",
+    "3.2",
+    "5.1",
+    "6.1",
+    "7.2"
+  ],
+  "design_intent": "Theft claim with missing mandatory First Information Report (FIR) to test specific missing document detection and citation."
+}

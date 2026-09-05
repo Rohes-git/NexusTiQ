@@ -1,0 +1,30 @@
+{
+  "claim_id": "CLM-001",
+  "claim_type": "accident",
+  "policy_number": "POL-001",
+  "vehicle_registration": "TN01AB1234",
+  "vehicle": "Hyundai i20",
+  "incident_date": "20 August 2026",
+  "notification_date": "22 August 2026",
+  "claimed_amount": 78000,
+  "repair_estimate_amount": 78000,
+  "incident_description": "The insured vehicle was travelling on a city road when another vehicle collided with its front-left side. The insured vehicle sustained damage to the front bumper, left headlamp and front fender.",
+  "damage_items": [
+    "Front bumper replacement",
+    "Left headlamp replacement",
+    "Front fender repair"
+  ],
+  "expected_recommendation": "APPROVE",
+  "expected_escalation": false,
+  "expected_missing_documents": [],
+  "expected_contradictions": [],
+  "expected_policy_clauses": [
+    "1.1",
+    "1.2",
+    "2.1",
+    "2.2",
+    "6.1",
+    "7.1"
+  ],
+  "design_intent": "Clean accident claim with complete documents, valid dates, consistent amounts, and clear coverage."
+}

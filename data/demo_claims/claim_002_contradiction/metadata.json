@@ -1,0 +1,53 @@
+{
+  "claim_id": "CLM-002",
+  "claim_type": "accident",
+  "policy_number": "POL-002",
+  "vehicle_registration": "TN02CD5678",
+  "vehicle": "Maruti Baleno",
+  "claim_form": {
+    "incident_date": "10 August 2026",
+    "notification_date": "15 August 2026",
+    "claimed_amount": 85000,
+    "incident_description": "The vehicle was involved in a collision on 10 August 2026."
+  },
+  "repair_estimate": {
+    "estimate_date": "16 August 2026",
+    "incident_date": "14 August 2026",
+    "estimated_repair_amount": 92000,
+    "damage_items": [
+      "Front bumper replacement",
+      "Right headlamp replacement",
+      "Bonnet repair"
+    ]
+  },
+  "expected_recommendation": "REQUEST_INFORMATION",
+  "expected_escalation": false,
+  "expected_missing_documents": [],
+  "expected_contradictions": [
+    {
+      "field": "incident_date",
+      "claim_form_value": "10 August 2026",
+      "repair_estimate_value": "14 August 2026",
+      "description": "Incident date mismatch between claim form (10 August 2026) and repair estimate (14 August 2026)"
+    },
+    {
+      "field": "claimed_amount_vs_repair_estimate",
+      "claim_form_value": "85000",
+      "repair_estimate_value": "92000",
+      "description": "Financial mismatch between claimed amount (₹85,000) and repair estimate total (₹92,000)"
+    }
+  ],
+  "expected_missing_information": [
+    "Clarification/correction of incident date",
+    "Clarification of claimed amount versus repair estimate"
+  ],
+  "expected_policy_clauses": [
+    "1.1",
+    "2.1",
+    "2.2",
+    "6.1",
+    "7.1",
+    "7.3"
+  ],
+  "design_intent": "Accident claim containing deliberate factual contradictions (date mismatch and amount discrepancy) requiring investigator clarification."
+}
