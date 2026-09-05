@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClaimLens — Evidence Review Assistant</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+  <!-- ── Header ────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <h1 class="brand-name">Claim<span class="brand-accent">Lens</span></h1>
+        <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant</p>
+      </div>
+      <span class="track-badge">PS02</span>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ── Submit a Claim ────────────────────────────────────────── -->
+    <section class="card submit-card">
+      <h2 class="card-title">Submit a Claim</h2>
+      <form id="claim-form" class="claim-form" enctype="multipart/form-data">
+
+        <div class="form-group">
+          <label for="claim-form-file">Claim Form</label>
+          <div class="file-upload" id="drop-claim-form">
+            <input type="file" id="claim-form-file" name="claim_form" accept=".pdf" />
+            <p class="file-upload-text">
+              <span class="file-upload-icon">📄</span>
+              Drop PDF here or <span class="link">browse</span>
+            </p>
+            <p class="file-name" id="claim-form-name"></p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="repair-estimate-file">Repair Estimate / FIR</label>
+          <div class="file-upload" id="drop-repair-estimate">
+            <input type="file" id="repair-estimate-file" name="repair_estimate" accept=".pdf" />
+            <p class="file-upload-text">
+              <span class="file-upload-icon">📄</span>
+              Drop PDF here or <span class="link">browse</span>
+            </p>
+            <p class="file-name" id="repair-estimate-name"></p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="incident-description">Incident Description</label>
+          <textarea
+            id="incident-description"
+            name="incident_description"
+            rows="5"
+            placeholder="Describe the incident — what happened, when, where, vehicles involved…"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="claim-id">
+            Claim ID <span class="optional">(optional)</span>
+          </label>
+          <input
+            type="text"
+            id="claim-id"
+            name="claim_id"
+            placeholder="e.g. CLM-2026-00142"
+          />
+        </div>
+
+        <button type="submit" class="btn-primary" id="review-btn">
+          Review Claim
+        </button>
+      </form>
+
+      <!-- Submission feedback -->
+      <div id="submit-feedback" class="feedback hidden"></div>
+    </section>
+
+    <!-- ── Review Preview ────────────────────────────────────────── -->
+    <section class="card preview-card">
+      <h2 class="card-title">
+        Review Preview
+        <span class="proto-badge">Prototype Preview</span>
+      </h2>
+
+      <!-- Document Status -->
+      <div class="preview-section">
+        <h3 class="section-heading">Document Status</h3>
+        <ul class="status-list" id="doc-status-list">
+          <li>
+            <span class="status-label">Claim Form</span>
+            <span class="badge badge-empty" id="status-claim-form">Not submitted</span>
+          </li>
+          <li>
+            <span class="status-label">Repair Estimate / FIR</span>
+            <span class="badge badge-empty" id="status-repair-estimate">Not submitted</span>
+          </li>
+          <li>
+            <span class="status-label">Incident Description</span>
+            <span class="badge badge-empty" id="status-description">Not submitted</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Consistency -->
+      <div class="preview-section">
+        <h3 class="section-heading">Consistency</h3>
+        <p class="muted" id="consistency-status">Waiting for claim documents</p>
+      </div>
+
+      <!-- Policy Analysis -->
+      <div class="preview-section">
+        <h3 class="section-heading">Policy Analysis</h3>
+        <p class="muted" id="policy-status">Waiting for claim review</p>
+      </div>
+
+      <!-- Recommendation -->
+      <div class="preview-section">
+        <h3 class="section-heading">Recommendation</h3>
+        <p class="muted" id="recommendation-status">Awaiting evidence</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <p>ClaimLens v0.1 · Milestone 1 · Evidence first. Decisions second.</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

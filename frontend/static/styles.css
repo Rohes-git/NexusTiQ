@@ -1,0 +1,361 @@
+/* ================================================================
+   ClaimLens — styles.css
+   Professional insurance-tool aesthetic: restrained, typographic, clear.
+   ================================================================ */
+
+/* ── Reset & base ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --clr-bg: #f5f6f8;
+  --clr-surface: #ffffff;
+  --clr-border: #dfe2e8;
+  --clr-text: #1e2330;
+  --clr-text-muted: #6b7280;
+  --clr-primary: #1d4ed8;
+  --clr-primary-hover: #1e40af;
+  --clr-accent: #2563eb;
+  --clr-success: #059669;
+  --clr-warning: #d97706;
+  --clr-error: #dc2626;
+  --clr-badge-empty: #e5e7eb;
+  --clr-badge-empty-text: #6b7280;
+  --clr-badge-received: #dbeafe;
+  --clr-badge-received-text: #1d4ed8;
+  --radius: 8px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.07);
+  --font: "Inter", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.header {
+  background: var(--clr-surface);
+  border-bottom: 1px solid var(--clr-border);
+  padding: 20px 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-name {
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--clr-text);
+}
+
+.brand-accent {
+  color: var(--clr-primary);
+}
+
+.brand-subtitle {
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+  margin-top: 2px;
+}
+
+.track-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: var(--clr-primary);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* ── Main ──────────────────────────────────────────────────────── */
+.main {
+  max-width: 860px;
+  width: 100%;
+  margin: 32px auto;
+  padding: 0 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────── */
+.card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Form ──────────────────────────────────────────────────────── */
+.claim-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--clr-text);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--clr-text-muted);
+}
+
+/* File upload */
+.file-upload {
+  position: relative;
+  border: 2px dashed var(--clr-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.file-upload:hover,
+.file-upload.dragover {
+  border-color: var(--clr-primary);
+  background: #f0f4ff;
+}
+
+.file-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload-icon {
+  font-size: 1.3rem;
+  margin-right: 4px;
+}
+
+.file-upload-text {
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+}
+
+.file-upload .link {
+  color: var(--clr-primary);
+  text-decoration: underline;
+}
+
+.file-name {
+  font-size: 0.82rem;
+  color: var(--clr-primary);
+  font-weight: 500;
+  margin-top: 6px;
+  min-height: 1.2em;
+}
+
+/* Textarea & input */
+textarea,
+input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: var(--font);
+  color: var(--clr-text);
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--clr-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+
+.btn-primary:hover {
+  background: var(--clr-primary-hover);
+}
+
+.btn-primary:disabled {
+  background: #93a5d6;
+  cursor: not-allowed;
+}
+
+/* ── Feedback ──────────────────────────────────────────────────── */
+.feedback {
+  margin-top: 20px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.feedback.success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.feedback.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ── Preview card ──────────────────────────────────────────────── */
+.proto-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.preview-section {
+  margin-bottom: 20px;
+}
+
+.preview-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-heading {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--clr-text-muted);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+/* Status list */
+.status-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+}
+
+.status-label {
+  font-weight: 500;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+
+.badge-empty {
+  background: var(--clr-badge-empty);
+  color: var(--clr-badge-empty-text);
+}
+
+.badge-received {
+  background: var(--clr-badge-received);
+  color: var(--clr-badge-received-text);
+}
+
+.muted {
+  font-size: 0.88rem;
+  color: var(--clr-text-muted);
+  font-style: italic;
+}
+
+/* ── Footer ────────────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 20px 24px;
+  font-size: 0.78rem;
+  color: var(--clr-text-muted);
+  border-top: 1px solid var(--clr-border);
+  margin-top: auto;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .card {
+    padding: 20px 18px;
+  }
+
+  .main {
+    padding: 0 12px;
+    margin: 20px auto;
+  }
+}
