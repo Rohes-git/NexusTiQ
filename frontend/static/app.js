@@ -28,6 +28,7 @@
   var btnExtractRepair = document.getElementById("btn-extract-repair-estimate");
   var btnRetrievePolicy = document.getElementById("btn-retrieve-policy");
   var btnEvaluateRules = document.getElementById("btn-evaluate-rules");
+  var btnAnalyzeEvidence = document.getElementById("btn-analyze-evidence");
 
   var extractionCard = document.getElementById("extraction-results-card");
   var extractDocTypeBadge = document.getElementById("extract-doc-type-badge");
@@ -44,12 +45,23 @@
   var ruleMetricsBanner = document.getElementById("rule-metrics-banner");
   var ruleFindingsList = document.getElementById("rule-findings-list");
 
+  var evidenceAnalysisCard = document.getElementById("evidence-analysis-card");
+  var evidenceMetricsBanner = document.getElementById("evidence-metrics-banner");
+  var contradictionsList = document.getElementById("contradictions-list");
+  var completenessList = document.getElementById("completeness-list");
+  var consistentList = document.getElementById("consistent-list");
+  var contradictionsCountBadge = document.getElementById("contradictions-count-badge");
+  var completenessCountBadge = document.getElementById("completeness-count-badge");
+  var consistentCountBadge = document.getElementById("consistent-count-badge");
+
   var statusClaimForm = document.getElementById("status-claim-form");
   var statusRepairEstimate = document.getElementById("status-repair-estimate");
   var statusDescription = document.getElementById("status-description");
   var policyStatus = document.getElementById("policy-status");
+  var consistencyStatus = document.getElementById("consistency-status");
 
   var currentExtractedFacts = [];
+  var extractedDocsMap = {};
   var uploadedDocumentNames = [];
 
   // ── File-name and Button State Binding ──────────────────────────
@@ -169,6 +181,17 @@
     currentExtractedFacts = data.facts || [];
     metaFilename.textContent = data.document.filename;
     metaPages.textContent = data.document.page_count;
+
+    if (data.document && data.document.filename) {
+      extractedDocsMap[data.document.filename] = {
+        filename: data.document.filename,
+        document_type: data.document.document_type,
+        facts: data.facts || [],
+      };
+      if (uploadedDocumentNames.indexOf(data.document.filename) === -1) {
+        uploadedDocumentNames.push(data.document.filename);
+      }
+    }
 
     var typeLabels = {
       claim_form: "Claim Form",
@@ -485,6 +508,265 @@
     if (policyStatus) {
       policyStatus.textContent = `${summary.total_rules_checked || 0} deterministic policy rules evaluated (${summary.pass_count || 0} PASS, ${summary.fail_count || 0} FAIL, ${summary.warning_count || 0} WARNING)`;
       policyStatus.className = "text-success font-medium";
+    }
+  }
+
+  // ── Evidence Analysis (Milestone 6) ──────────────────────────────
+  if (btnAnalyzeEvidence) {
+    btnAnalyzeEvidence.addEventListener("click", async function () {
+      var docKeys = Object.keys(extractedDocsMap);
+      var payloadFacts = null;
+
+      if (docKeys.length > 1) {
+        payloadFacts = Object.values(extractedDocsMap);
+      } else if (docKeys.length === 1) {
+        payloadFacts = extractedDocsMap[docKeys[0]].facts;
+      } else if (currentExtractedFacts && currentExtractedFacts.length > 0) {
+        payloadFacts = currentExtractedFacts;
+      } else {
+        showFeedback("error", "Please extract facts from at least one document first before running evidence analysis.");
+        return;
+      }
+
+      btnAnalyzeEvidence.disabled = true;
+      var originalText = btnAnalyzeEvidence.textContent;
+      btnAnalyzeEvidence.textContent = "Analyzing Evidence…";
+      feedback.classList.add("hidden");
+
+      var claimIdVal = claimIdInput ? claimIdInput.value.trim() : "";
+      var docList = uploadedDocumentNames.slice();
+      docKeys.forEach(function (k) {
+        if (docList.indexOf(k) === -1) docList.push(k);
+      });
+
+      try {
+        var response = await fetch("/api/analyze-evidence", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            facts: payloadFacts,
+            documents: docList,
+            claim_id: claimIdVal || undefined,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!data.success) {
+          showFeedback("error", data.error || "Failed to analyze evidence.");
+          evidenceAnalysisCard.classList.add("hidden");
+        } else {
+          renderEvidenceAnalysisResults(data);
+        }
+      } catch (err) {
+        showFeedback("error", "Error connecting to evidence review engine: " + err.message);
+        evidenceAnalysisCard.classList.add("hidden");
+      } finally {
+        btnAnalyzeEvidence.disabled = false;
+        btnAnalyzeEvidence.textContent = originalText;
+      }
+    });
+  }
+
+  function renderEvidenceAnalysisResults(data) {
+    var summary = data.summary || {};
+    var contradictions = data.contradictions || [];
+    var completeness = data.completeness || [];
+    var consistentFields = data.consistent_fields || [];
+
+    // Summary banner
+    var cCount = contradictions.length;
+    var cBadgeClass = cCount > 0 ? "badge-fail" : "badge-pass";
+    var compPresent = summary.present_documents_count || 0;
+    var compTotal = summary.total_required_documents || completeness.length;
+
+    evidenceMetricsBanner.innerHTML = `
+      <div class="evidence-metric-item">
+        <span class="badge" style="background: #334155; color: #fff; font-weight: 700;">Claim Type: ${data.claim_type || "UNKNOWN"}</span>
+      </div>
+      <div class="evidence-metric-item">
+        <span class="badge ${cBadgeClass}">⚡ ${cCount} Contradiction${cCount === 1 ? "" : "s"}</span>
+      </div>
+      <div class="evidence-metric-item">
+        <span class="badge badge-pass">📋 ${compPresent} / ${compTotal} Required Docs</span>
+      </div>
+      <div class="evidence-metric-item">
+        <span class="badge badge-insufficient">✓ ${consistentFields.length} Verified Match${consistentFields.length === 1 ? "" : "es"}</span>
+      </div>
+    `;
+
+    // 1. Contradictions Section
+    if (contradictionsCountBadge) {
+      contradictionsCountBadge.textContent = `${cCount} detected`;
+    }
+    contradictionsList.innerHTML = "";
+
+    if (cCount === 0) {
+      var noContra = document.createElement("div");
+      noContra.className = "finding-facts-used";
+      noContra.style.color = "#166534";
+      noContra.style.background = "#f0fdf4";
+      noContra.style.borderColor = "#bbf7d0";
+      noContra.innerHTML = "<strong>✓ Consistency Verified:</strong> No factual contradictions detected across submitted documents.";
+      contradictionsList.appendChild(noContra);
+    } else {
+      contradictions.forEach(function (contra) {
+        var card = document.createElement("div");
+        var sev = (contra.severity || "MEDIUM").toLowerCase();
+        card.className = "contradiction-card severity-" + sev;
+
+        var header = document.createElement("div");
+        header.className = "contradiction-header-row";
+
+        var leftMeta = document.createElement("div");
+        leftMeta.className = "contradiction-left-meta";
+
+        var idBadge = document.createElement("span");
+        idBadge.className = "contradiction-id-badge";
+        idBadge.textContent = contra.contradiction_id || "MISMATCH";
+
+        var catText = document.createElement("span");
+        catText.className = "contradiction-category-text";
+        catText.textContent = (contra.field_name || "Field").replace(/_/g, " ").toUpperCase() + " MISMATCH";
+
+        leftMeta.appendChild(idBadge);
+        leftMeta.appendChild(catText);
+
+        var sevBadge = document.createElement("span");
+        sevBadge.className = "badge badge-" + sev;
+        sevBadge.textContent = (contra.severity || "MEDIUM") + " SEVERITY";
+
+        header.appendChild(leftMeta);
+        header.appendChild(sevBadge);
+
+        // Comparison Grid
+        var compGrid = document.createElement("div");
+        compGrid.className = "comparison-grid";
+
+        // Side A
+        var sideA = document.createElement("div");
+        sideA.className = "comparison-side";
+        var valA = contra.value_a !== null && contra.value_a !== undefined ? contra.value_a : (contra.raw_value_a || "—");
+        if (typeof valA === "number" && String(contra.field_name).includes("amount")) {
+          valA = "₹" + Number(valA).toLocaleString();
+        }
+        sideA.innerHTML = `
+          <div class="doc-label">
+            <span>Doc A: ${contra.document_a || "Document 1"}</span>
+            <span>Page ${contra.page_a || 1}</span>
+          </div>
+          <div class="doc-val">${valA}</div>
+          <div class="doc-quote">"${contra.evidence_a || "(No direct quote)"}"</div>
+        `;
+
+        // Side B
+        var sideB = document.createElement("div");
+        sideB.className = "comparison-side";
+        var valB = contra.value_b !== null && contra.value_b !== undefined ? contra.value_b : (contra.raw_value_b || "—");
+        if (typeof valB === "number" && String(contra.field_name).includes("amount")) {
+          valB = "₹" + Number(valB).toLocaleString();
+        }
+        sideB.innerHTML = `
+          <div class="doc-label">
+            <span>Doc B: ${contra.document_b || "Document 2"}</span>
+            <span>Page ${contra.page_b || 1}</span>
+          </div>
+          <div class="doc-val">${valB}</div>
+          <div class="doc-quote">"${contra.evidence_b || "(No direct quote)"}"</div>
+        `;
+
+        compGrid.appendChild(sideA);
+        compGrid.appendChild(sideB);
+
+        var msg = document.createElement("div");
+        msg.className = "contradiction-message-text";
+        msg.textContent = contra.message;
+
+        card.appendChild(header);
+        card.appendChild(compGrid);
+        card.appendChild(msg);
+
+        contradictionsList.appendChild(card);
+      });
+    }
+
+    // 2. Completeness Section
+    if (completenessCountBadge) {
+      completenessCountBadge.textContent = `${completeness.length} requirements`;
+    }
+    completenessList.innerHTML = "";
+
+    completeness.forEach(function (comp) {
+      var card = document.createElement("div");
+      var st = (comp.status || "MISSING").toLowerCase();
+      card.className = "completeness-card status-" + st;
+
+      var leftDiv = document.createElement("div");
+      leftDiv.className = "completeness-left";
+
+      var header = document.createElement("div");
+      header.className = "completeness-header";
+
+      var clauseBadge = document.createElement("span");
+      clauseBadge.className = "finding-clause-badge";
+      clauseBadge.textContent = "Clause " + comp.clause_id;
+
+      var docName = document.createElement("span");
+      docName.className = "completeness-doc-name";
+      docName.textContent = comp.required_document;
+
+      header.appendChild(clauseBadge);
+      header.appendChild(docName);
+
+      var msg = document.createElement("div");
+      msg.className = "completeness-msg";
+      msg.textContent = comp.message;
+
+      leftDiv.appendChild(header);
+      leftDiv.appendChild(msg);
+
+      var statusBadge = document.createElement("span");
+      statusBadge.className = "badge badge-" + st;
+      statusBadge.textContent = comp.status;
+
+      card.appendChild(leftDiv);
+      card.appendChild(statusBadge);
+
+      completenessList.appendChild(card);
+    });
+
+    // 3. Consistent Fields Section
+    if (consistentCountBadge) {
+      consistentCountBadge.textContent = `${consistentFields.length} matching`;
+    }
+    consistentList.innerHTML = "";
+
+    if (consistentFields.length === 0) {
+      var emptyMsg = document.createElement("div");
+      emptyMsg.className = "section-subtext";
+      emptyMsg.textContent = "No multi-document matching fields available for cross-verification.";
+      consistentList.appendChild(emptyMsg);
+    } else {
+      consistentFields.forEach(function (item) {
+        var chip = document.createElement("div");
+        chip.className = "consistent-chip";
+        var valStr = formatFactValue(item.field_name, item.value);
+        chip.innerHTML = `<strong>${item.field_name.replace(/_/g, " ")}:</strong> ${valStr} <span style="opacity:0.75; font-size:0.75rem;">(${item.documents.join(" & ")})</span>`;
+        consistentList.appendChild(chip);
+      });
+    }
+
+    evidenceAnalysisCard.classList.remove("hidden");
+    evidenceAnalysisCard.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (consistencyStatus) {
+      if (cCount > 0) {
+        consistencyStatus.textContent = `${cCount} contradiction${cCount === 1 ? "" : "s"} detected across evidence (${compPresent}/${compTotal} required documents present)`;
+        consistencyStatus.className = "text-warning font-medium";
+      } else {
+        consistencyStatus.textContent = `All facts consistent across evidence (${compPresent}/${compTotal} required documents present)`;
+        consistencyStatus.className = "text-success font-medium";
+      }
     }
   }
 

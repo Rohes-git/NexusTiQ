@@ -146,10 +146,19 @@ class PolicyRetrievalRequest(BaseModel):
 
 class PolicyEvaluationRequest(BaseModel):
     """Request payload for /api/evaluate-policy."""
-    facts: Optional[list[ExtractedFact]] = None
+    facts: Optional[Any] = None
     claim_facts: Optional[dict[str, Any]] = None
     documents: Optional[list[str]] = None
     claim_id: Optional[str] = None
+    retrieved_clauses: Optional[list[Any]] = None
+
+
+class EvidenceAnalysisRequest(BaseModel):
+    """Request payload for /api/analyze-evidence."""
+    claim_id: Optional[str] = None
+    facts: Optional[Any] = None
+    claim_facts: Optional[dict[str, Any]] = None
+    documents: Optional[list[str]] = None
     retrieved_clauses: Optional[list[Any]] = None
 
 

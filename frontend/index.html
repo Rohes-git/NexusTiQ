@@ -16,7 +16,7 @@
         <p class="brand-subtitle">Motor Insurance Claims Evidence Review Assistant</p>
       </div>
       <div class="header-right">
-        <span class="pipeline-tag">Milestone 5 · Deterministic Policy Rules</span>
+        <span class="pipeline-tag">Milestone 6 · Contradiction & Completeness Engine</span>
         <span class="track-badge">PS02</span>
       </div>
     </div>
@@ -137,7 +137,7 @@
         <!-- Dynamically populated -->
       </div>
 
-      <!-- Action: Retrieve Policy & Evaluate Rules -->
+      <!-- Action: Retrieve Policy & Evaluate Rules & Analyze Evidence -->
       <div class="retrieval-action-row" style="margin-top: 24px;">
         <button type="button" class="btn-primary" id="btn-retrieve-policy">
           🔍 Retrieve Relevant Policy
@@ -145,12 +145,15 @@
         <button type="button" class="btn-primary" id="btn-evaluate-rules" style="background-color: #0f766e;">
           ⚖️ Evaluate Policy Rules
         </button>
-        <span class="action-note">Deterministic evaluation against 16 canonical policy clauses</span>
+        <button type="button" class="btn-primary" id="btn-analyze-evidence" style="background-color: #7c2d12;">
+          🔎 Analyze Evidence & Completeness
+        </button>
+        <span class="action-note">Deterministic multi-document cross-check & evidence verification</span>
       </div>
 
       <div class="extraction-disclaimer">
         <span class="info-icon">ℹ️</span>
-        <span>Fact extraction complete — click above to retrieve grounded policy clauses or submit for pipeline tracking.</span>
+        <span>Fact extraction complete — click above to retrieve grounded policy clauses, evaluate rules, or run cross-document evidence analysis.</span>
       </div>
     </section>
 
@@ -206,6 +209,67 @@
       </div>
     </section>
 
+    <!-- ── Evidence Analysis Section (Milestone 6) ────────────────── -->
+    <section class="card evidence-analysis-card hidden" id="evidence-analysis-card">
+      <div class="card-header-row">
+        <h2 class="card-title">Evidence Contradictions & Completeness</h2>
+        <span class="subtle-badge">Deterministic Cross-Document Cross-Check</span>
+      </div>
+
+      <!-- Summary metrics banner -->
+      <div class="evidence-metrics-banner" id="evidence-metrics-banner">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Contradictions Section -->
+      <div class="analysis-sub-section">
+        <h3 class="section-heading" style="display: flex; align-items: center; justify-content: space-between;">
+          <span>1. Evidence Contradictions & Discrepancies</span>
+          <span class="subtle-count" id="contradictions-count-badge">0 detected</span>
+        </h3>
+        <p class="section-subtext">
+          Deterministic cross-document fact comparison. Both conflicting values and supporting citations are preserved for investigator review.
+        </p>
+        <div class="contradictions-list" id="contradictions-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Completeness Section -->
+      <div class="analysis-sub-section" style="margin-top: 28px;">
+        <h3 class="section-heading" style="display: flex; align-items: center; justify-content: space-between;">
+          <span>2. Required Policy Document Completeness</span>
+          <span class="subtle-count" id="completeness-count-badge">0 requirements</span>
+        </h3>
+        <p class="section-subtext">
+          Evaluation of document completeness against policy rules (Clause 7.1 for Accident claims, Clause 7.2 & 3.2 for Theft claims).
+        </p>
+        <div class="completeness-list" id="completeness-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Consistent Evidence Section -->
+      <div class="analysis-sub-section" style="margin-top: 28px;">
+        <h3 class="section-heading" style="display: flex; align-items: center; justify-content: space-between;">
+          <span>3. Verified Consistent Facts</span>
+          <span class="subtle-count" id="consistent-count-badge">0 matching</span>
+        </h3>
+        <div class="consistent-list" id="consistent-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Non-adjudication disclaimer -->
+      <div class="evidence-disclaimer">
+        <span class="info-icon">🛡️</span>
+        <div>
+          <strong>Evidence Analysis Notice:</strong>
+          <span>This engine identifies factual discrepancies and document completeness gaps across submitted evidence. It strictly does not make final claim adjudication decisions (APPROVE / REJECT / DENY / FRAUD) and never chooses which document is truthful.</span>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Review Preview ────────────────────────────────────────── -->
     <section class="card preview-card">
       <h2 class="card-title">
@@ -255,7 +319,7 @@
 
   <!-- ── Footer ────────────────────────────────────────────────────── -->
   <footer class="footer">
-    <p>ClaimLens v0.1 · Milestone 5 · Evidence first. Decisions second.</p>
+    <p>ClaimLens v0.1 · Milestone 6 · Evidence first. Decisions second.</p>
   </footer>
 
   <script src="/static/app.js"></script>

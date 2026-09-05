@@ -92,13 +92,21 @@ class EmbeddingService:
             raise GeminiEmbeddingAPIError(f"Failed to generate embedding: {str(e)}") from e
 
     def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """Generate embedding vectors for a batch of strings.
+        """Generate embedding vectors for a list of strings.
+
+        Embeds each string individually to guarantee exactly one embedding
+        per input text in the exact original order.
 
         Args:
             texts: List of text strings to embed.
 
         Returns:
-            List of embedding vectors.
+            List of embedding vectors, one per input string.
+
+        Raises:
+            EmbeddingServiceError: If any text is empty or embedding count mismatches.
+            GeminiNotConfiguredError: If API key is missing.
+            GeminiEmbeddingAPIError: If API call fails.
         """
         if not texts:
             return []
@@ -107,21 +115,17 @@ class EmbeddingService:
         if len(cleaned_texts) != len(texts):
             raise EmbeddingServiceError("All texts in batch must be non-empty.")
 
-        client = self._get_client()
-        try:
-            response = client.models.embed_content(
-                model=self.model,
-                contents=cleaned_texts,
+        embeddings: list[list[float]] = []
+        for text in cleaned_texts:
+            vec = self.embed_text(text)
+            embeddings.append(vec)
+
+        if len(embeddings) != len(texts):
+            raise EmbeddingServiceError(
+                f"Embedding count mismatch: expected {len(texts)} embeddings but generated {len(embeddings)}."
             )
-            if not response.embeddings:
-                raise GeminiEmbeddingAPIError("Gemini returned empty batch embeddings.")
-            return [list(emb.values) for emb in response.embeddings]
-        except APIError as e:
-            raise GeminiEmbeddingAPIError(f"Gemini Batch Embedding API error: {str(e)}") from e
-        except EmbeddingServiceError:
-            raise
-        except Exception as e:
-            raise GeminiEmbeddingAPIError(f"Failed to generate batch embeddings: {str(e)}") from e
+
+        return embeddings
 
 
 class MockEmbeddingService:

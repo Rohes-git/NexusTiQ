@@ -32,6 +32,7 @@ from src.models import (
     ExtractionError,
     PolicyRetrievalRequest,
     PolicyEvaluationRequest,
+    EvidenceAnalysisRequest,
 )
 from src.retrieval.policy_retriever import (
     PolicyRetriever,
@@ -44,6 +45,10 @@ from src.retrieval.grounding import (
 from src.rules.rule_engine import (
     PolicyRuleEngine,
     PolicyEvaluationResult,
+)
+from src.analysis.evidence_review import (
+    EvidenceReviewEngine,
+    EvidenceReviewResult,
 )
 
 logger = logging.getLogger("claimlens")
@@ -247,6 +252,62 @@ async def evaluate_policy(request: PolicyEvaluationRequest):
             content={
                 "success": False,
                 "error": f"Failed to evaluate policy rules: {str(e)}",
+            },
+        )
+
+
+@app.post("/api/analyze-evidence")
+async def analyze_evidence(request: EvidenceAnalysisRequest):
+    """Deterministically analyze cross-document contradictions and document completeness."""
+    facts = request.facts if request.facts is not None else request.claim_facts
+
+    try:
+        engine = EvidenceReviewEngine()
+        result = engine.analyze(
+            claim_id=request.claim_id,
+            facts=facts,
+            documents=request.documents,
+        )
+        return {
+            "success": True,
+            "claim_id": result.claim_id,
+            "claim_type": result.claim_type,
+            "contradictions": result.contradictions,
+            "completeness": result.completeness,
+            "consistent_fields": [
+                {
+                    "field_name": cf.field_name,
+                    "category": cf.category,
+                    "document_a": cf.document_a,
+                    "document_b": cf.document_b,
+                    "documents": cf.documents,
+                    "value": cf.value,
+                    "message": cf.message,
+                }
+                for cf in result.consistent_fields
+            ],
+            "summary": {
+                "contradiction_count": result.summary.contradiction_count,
+                "total_contradictions": result.summary.contradiction_count,
+                "high_severity_count": result.summary.high_severity_count,
+                "medium_severity_count": result.summary.medium_severity_count,
+                "low_severity_count": result.summary.low_severity_count,
+                "missing_evidence_count": result.summary.missing_evidence_count,
+                "missing_documents_count": result.summary.missing_evidence_count,
+                "present_documents_count": result.summary.present_documents_count,
+                "total_required_documents": result.summary.total_required_documents,
+                "incomplete_evidence_count": result.summary.incomplete_evidence_count,
+                "consistent_field_count": result.summary.consistent_field_count,
+                "total_requirements_checked": result.summary.total_requirements_checked,
+            },
+        }
+    except Exception as e:
+        logger.error(f"Error analyzing evidence: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": f"Failed to analyze evidence: {str(e)}",
             },
         )
 

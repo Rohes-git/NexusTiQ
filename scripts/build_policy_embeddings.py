@@ -85,6 +85,9 @@ def build_embeddings() -> int:
     try:
         embeddings = embedder.embed_texts(texts_to_embed)
         print(f"[OK] Generated {len(embeddings)} embeddings.")
+        if len(embeddings) != len(clauses):
+            print(f"[FAIL] Embedding count mismatch: expected {len(clauses)} embeddings, got {len(embeddings)}.")
+            return 1
     except GeminiNotConfiguredError as e:
         print(f"[FAIL] {e.message}")
         return 1
