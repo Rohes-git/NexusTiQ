@@ -60,6 +60,7 @@ from src.report.audit_report import (
     AuditReport,
     AuditReportGenerator,
 )
+from src.demo_loader import load_demo_claim, CLAIM_MAP
 
 logger = logging.getLogger("claimlens")
 
@@ -87,6 +88,20 @@ async def serve_frontend():
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/api/demo-claim/{claim_id}")
+async def get_demo_claim(claim_id: str):
+    """Retrieve canonical demo claim documents, metadata, and pre-extracted facts."""
+    cid = claim_id.upper().strip()
+    if cid not in CLAIM_MAP:
+        raise HTTPException(status_code=404, detail=f"Demo claim '{claim_id}' not found. Available: {list(CLAIM_MAP.keys())}")
+    try:
+        data = load_demo_claim(cid)
+        return data
+    except Exception as e:
+        logger.error(f"Error loading demo claim {claim_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load demo claim: {str(e)}")
 
 
 @app.post("/api/extract-document", response_model=ExtractionResponse)
@@ -209,6 +224,14 @@ async def retrieve_policy(request: PolicyRetrievalRequest):
     """Retrieve and ground relevant policy clauses for extracted claim facts."""
     facts = request.facts if request.facts is not None else request.claim_facts
     if facts is None or (isinstance(facts, list) and len(facts) == 0) or (isinstance(facts, dict) and len(facts) == 0):
+        if request.claim_id and request.claim_id.upper().strip() in CLAIM_MAP:
+            try:
+                demo_data = load_demo_claim(request.claim_id)
+                facts = demo_data["all_facts"]
+            except Exception:
+                pass
+
+    if facts is None or (isinstance(facts, list) and len(facts) == 0) or (isinstance(facts, dict) and len(facts) == 0):
         return PolicyRetrievalResponse(
             success=False,
             error="No claim facts provided in request. Please extract or provide facts first.",
@@ -240,12 +263,23 @@ async def retrieve_policy(request: PolicyRetrievalRequest):
 async def evaluate_policy(request: PolicyEvaluationRequest):
     """Deterministically evaluate policy rules against claim facts and documents."""
     facts = request.facts if request.facts is not None else request.claim_facts
+    documents = request.documents
+
+    if facts is None or (isinstance(facts, list) and len(facts) == 0) or (isinstance(facts, dict) and len(facts) == 0):
+        if request.claim_id and request.claim_id.upper().strip() in CLAIM_MAP:
+            try:
+                demo_data = load_demo_claim(request.claim_id)
+                facts = demo_data["extracted_documents"]
+                if not documents:
+                    documents = demo_data["documents"]
+            except Exception:
+                pass
 
     try:
         engine = PolicyRuleEngine()
         result = engine.evaluate(
             facts=facts,
-            documents=request.documents,
+            documents=documents,
             claim_id=request.claim_id,
             retrieved_clauses=request.retrieved_clauses,
         )
@@ -270,13 +304,24 @@ async def evaluate_policy(request: PolicyEvaluationRequest):
 async def analyze_evidence(request: EvidenceAnalysisRequest):
     """Deterministically analyze cross-document contradictions and document completeness."""
     facts = request.facts if request.facts is not None else request.claim_facts
+    documents = request.documents
+
+    if facts is None or (isinstance(facts, list) and len(facts) == 0) or (isinstance(facts, dict) and len(facts) == 0):
+        if request.claim_id and request.claim_id.upper().strip() in CLAIM_MAP:
+            try:
+                demo_data = load_demo_claim(request.claim_id)
+                facts = demo_data["extracted_documents"]
+                if not documents:
+                    documents = demo_data["documents"]
+            except Exception:
+                pass
 
     try:
         engine = EvidenceReviewEngine()
         result = engine.analyze(
             claim_id=request.claim_id,
             facts=facts,
-            documents=request.documents,
+            documents=documents,
         )
         return {
             "success": True,
@@ -332,6 +377,15 @@ async def generate_review(request: ReviewGenerationRequest):
     policy_findings = request.policy_findings or []
     contradictions = request.contradictions or []
     completeness = request.completeness or request.completeness_findings or []
+
+    if (facts is None or (isinstance(facts, list) and len(facts) == 0) or (isinstance(facts, dict) and len(facts) == 0)) and claim_id.upper().strip() in CLAIM_MAP:
+        try:
+            demo_data = load_demo_claim(claim_id)
+            facts = demo_data["extracted_documents"]
+            if not documents:
+                documents = demo_data["documents"]
+        except Exception as e:
+            logger.warning(f"Could not auto-load demo data for {claim_id}: {e}")
 
     try:
         # If retrieved clauses are missing and facts are present, retrieve them

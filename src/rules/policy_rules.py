@@ -132,6 +132,30 @@ def extract_fact_dict(
                     evidence_text=item.get("evidence_text", ""),
                     page_number=item.get("page_number"),
                 )
+            elif isinstance(item, dict) and "facts" in item and isinstance(item["facts"], list):
+                for sf in item["facts"]:
+                    if isinstance(sf, ExtractedFact):
+                        field = sf.field_name
+                        val = sf.value if sf.value is not None else sf.raw_value
+                        fact_dict[field] = val
+                        fact_objs[field] = FactUsed(
+                            field_name=field,
+                            value=val,
+                            raw_value=sf.raw_value,
+                            evidence_text=sf.evidence_text,
+                            page_number=sf.page_number,
+                        )
+                    elif isinstance(sf, dict) and "field_name" in sf:
+                        field = sf["field_name"]
+                        val = sf.get("value", sf.get("raw_value"))
+                        fact_dict[field] = val
+                        fact_objs[field] = FactUsed(
+                            field_name=field,
+                            value=val,
+                            raw_value=sf.get("raw_value"),
+                            evidence_text=sf.get("evidence_text", ""),
+                            page_number=sf.get("page_number"),
+                        )
             elif hasattr(item, "field_name"):
                 field = getattr(item, "field_name")
                 val = getattr(item, "value", getattr(item, "raw_value", None))

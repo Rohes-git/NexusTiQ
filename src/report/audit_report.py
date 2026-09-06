@@ -176,15 +176,27 @@ class AuditReportGenerator:
                                     pass
         elif isinstance(raw_facts, dict):
             for k, v in raw_facts.items():
-                facts_list.append(
-                    ExtractedFact(
-                        field_name=k,
-                        value=v,
-                        raw_value=str(v) if v is not None else None,
-                        evidence_text=f"{k}: {v}",
-                        page_number=1,
+                if isinstance(v, dict) and k in ["claim_form", "repair_estimate", "fir", "police_fir"]:
+                    for sub_k, sub_v in v.items():
+                        facts_list.append(
+                            ExtractedFact(
+                                field_name=sub_k,
+                                value=sub_v,
+                                raw_value=str(sub_v) if sub_v is not None else None,
+                                evidence_text=f"{sub_k}: {sub_v}",
+                                page_number=1,
+                            )
+                        )
+                else:
+                    facts_list.append(
+                        ExtractedFact(
+                            field_name=k,
+                            value=v,
+                            raw_value=str(v) if v is not None else None,
+                            evidence_text=f"{k}: {v}",
+                            page_number=1,
+                        )
                     )
-                )
         return facts_list
 
     def _normalize_document_names(
@@ -277,6 +289,10 @@ class AuditReportGenerator:
             make_model = f"{make} {model}"
         elif make or model:
             make_model = str(make or model)
+        elif f_map.get("vehicle_make_model"):
+            make_model = str(f_map.get("vehicle_make_model"))
+        elif f_map.get("vehicle"):
+            make_model = str(f_map.get("vehicle"))
 
         claimed = f_map.get("claimed_amount")
         try:
@@ -285,6 +301,8 @@ class AuditReportGenerator:
             claimed_val = None
 
         repair_est = f_map.get("repair_estimate_amount")
+        if repair_est is None:
+            repair_est = f_map.get("estimated_repair_amount")
         try:
             repair_val = float(repair_est) if repair_est is not None else None
         except (ValueError, TypeError):

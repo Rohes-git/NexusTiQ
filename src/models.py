@@ -139,8 +139,9 @@ class ExtractionResponse(BaseModel):
 
 class PolicyRetrievalRequest(BaseModel):
     """Request payload for /api/retrieve-policy."""
-    facts: Optional[list[ExtractedFact]] = None
+    facts: Optional[Any] = None
     claim_facts: Optional[dict[str, Any]] = None
+    claim_id: Optional[str] = None
     top_k: int = Field(5, ge=1, le=16, description="Number of relevant clauses to retrieve")
 
 
